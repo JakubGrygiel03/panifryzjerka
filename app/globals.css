@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-berry: #c02674;
+  --color-berry-deep: #9e1b5d;
+  --color-blush: #fdf2f7;
+  --color-ink: #1f1a24;
+  --color-mauve: #3f3648;
+  --color-gold: #f59e0b;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-playfair), serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(900px 420px at 100% -10%, rgb(192 38 116 / 0.08), transparent 60%),
+    var(--color-blush);
+  color: var(--color-ink);
+}
+
+.font-display {
+  font-weight: 700;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+}
+
+::selection {
+  background: #f3b4d2;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-fade {
+  animation: fade-in 220ms ease;
+}
+
+.animate-rise {
+  animation: rise-in 320ms ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-berry);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  iframe,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+}

@@ -1,0 +1,256 @@
+# Cursor Context: PaniFryzjerka – Salon Beauty Gdańsk & Headless Booking Engine (Zero-Commission Architecture)
+
+## 🎯 Project Overview
+
+**Goal:** Build a production-ready, ultra-fast, mobile-first web ecosystem and an independent booking platform for **PaniFryzjerka** (`panifryzjerka.pl`) – a family-run beauty salon in Gdańsk. The architecture decouples the public marketing showcase from an independent, reusable **Booking Engine (Micro-SaaS standard)**. This eliminates 3rd-party marketplace commissions (Booksy/Fresha fees), gives the salon owner complete control over her client roster, and provides a multi-tenant booking module ready to be plugged into any future client project.
+
+- **Salon Brand Identity:** Ciepła, rodzinna atmosfera, mistrzowska koloryzacja (*#szycieSiwizny*, baleyage), afroloki, stylizacja paznokci i rzęs.
+- **Core Trust Indicators:** Salon zaprzyjaźniony z psami, bezpłatny parking na posesji, pełna dostępność dla osób niepełnosprawnych, ocena Google 4.9★ (ponad 194 opinii)[cite: 1].
+- **Team Accents:** Pani Iryna i Bella jako główne twarze zespołu[cite: 1].
+- **Bilingual Support:** Podstawowa wersja polska (`PL`) oraz przełącznik na język rosyjski/ukraiński (`RU`) dla klientów zagranicznych[cite: 1].
+- **Primary Conversion CTAs:** Bezpośrednie połączenie telefoniczne w nagłówku (`tel:880606454`)[cite: 1] oraz 3-krokowy proces rezerwacji online bez prowizji.
+
+---
+
+## 🎨 Official Brand Identity & Design System (PaniFryzjerka Manual)
+
+### Color Palette (Exact UI Values)
+- **Jagodowy Róż / Vivid Berry (Primary CTA):** `#C02674` (RGB: 192, 38, 116) – Główne przyciski rezerwacji, akcenty tagów i kluczowe nagłówki[cite: 1].
+- **Ciemna Jagoda / Deep Berry (Hover State):** `#9E1B5D` (RGB: 158, 27, 93) – Stany aktywne przycisków i interakcji.
+- **Pudrowy Róż / Soft Blush Canvas:** `#FDF2F7` (RGB: 253, 242, 247) – Tła sekcji, chipy kategorii i zaokrąglone badge[cite: 1].
+- **Czysta Biel / Pure Canvas:** `#FFFFFF` (RGB: 255, 255, 255) – Pływające karty opinii, kontenery wizyt i cennik[cite: 1].
+- **Ciemny Antracyt / Deep Neutral:** `#1F1A24` (RGB: 31, 26, 36) – Tekst podstawowy i kontrastowe nagłówki.
+- **Muted Mauve / Zgaszony Fiolet:** `#6E6277` (RGB: 110, 98, 119) – Czasy trwania usług, podpisy i metadane.
+- **Złoty Akcent / Review Gold:** `#F59E0B` (RGB: 245, 158, 11) – Gwiazdki ocen Google[cite: 1].
+
+### Typography & Fonts
+- **Headings & Brand Display:** `Playfair Display` (Bold/SemiBold) lub fallback `Cormorant Garamond` – luksusowy sznyt salonu beauty z klasą[cite: 1].
+- **Body & Numerical Values:** `Inter` lub `Geist Sans` – neutralny, czysty krój zapewniający czytelność cennika i slotów godzinowych na ekranach smartfonów.
+
+### UI & Layout Conventions
+- **Pills & Floating Badges:** Etykiety lokalizacji (`Gdańsk, ul. Skarpowa 24`), atrybuty lokalu oraz numer telefonu zamknięte w zaokrąglonych kapsułkach (`rounded-full`) na subtelnym tle[cite: 1].
+- **Pływająca Karta Ocen Google:** Wyeksponowana karta w prawym rogu Hero (`rounded-3xl shadow-sm border border-pink-100/60`) z oceną **4.9**, rzędem 5 gwiazdek i wzmianką o stylistkach (*"Pani Iryna i Bella czekają na Ciebie 🐾"*)[cite: 1].
+- **Mobile Action Bar:** Przypięty do dolnej krawędzi ekranu pasek akcji na telefonach z przyciskami "Zadzwoń: 880-606-454"[cite: 1] i "Zarezerwuj Wizytę".
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Framework:** Next.js (App Router, React Server Components, Server Actions, Route Handlers)
+- **Language:** TypeScript (Strict Mode Enabled)
+- **Styling:** Tailwind CSS (Mobile-First approach, dedykowane tokeny berry/blush)
+- **UI Components:** Shadcn UI + Radix UI Primitives + Lucide React
+- **Website CMS:** Sanity.io Studio v3 (`next-sanity`) zamontowany w `/admin` (edycja cennika, godzin, metamorfoz, banneru urlopowego)
+- **Booking Engine & Auth:** Supabase (PostgreSQL, Row Level Security, Realtime dla blokad slotów, Auth dla personelu salonu)
+- **Client State:** Zustand (stan wyboru terminu, usługi i wariantu długości włosów w widżecie rezerwacji)
+- **Animations:** Framer Motion (slider metamorfoz Przed/Po, płynne przejścia kroków rezerwacji)
+- **Notifications:** Resend API (transakcyjne maile potwierdzające) + SMSAPI (automatyczne SMS-y z przypomnieniem o wizycie dzień wcześniej)
+- **Validation:** React Hook Form + Zod (rygorystyczna walidacja numerów telefonów i formularza)
+- **Hosting & Cron:** Vercel (Cron do wysyłki powiadomień 24h przed wizytą)
+
+---
+
+## 🏗️ Core Architecture & Features
+
+### 1. Moduł Wizytówkowy & Prezentacyjny (`/`)
+- **Hero & Trust Indicators:** Wyeksponowane atuty (*Zaprzyjaźniony z psami, Bezpłatny parking, Dostęp dla niepełnosprawnych*) oraz floating social proof card z oceną 4.9[cite: 1].
+- **Interaktywny Cennik (`/cennik`):**
+  - Kategorie: *Koloryzacja (#szycieSiwizny, Baleyage)*, *Strzyżenie i Modelowanie*, *Afroloki*, *Pielęgnacja*, *Paznokcie i Rzęsy*[cite: 1].
+  - Dynamiczne widełki cenowe zależne od długości włosów (Krótkie, Średnie, Długie, Bardzo długie).
+  - Przycisk *"Zarezerwuj"* przy każdej usłudze natychmiastowo otwierający silnik rezerwacji z wybraną wstępnie pozycją.
+- **Portfolio Przed / Po (`/metamorfozy`):** Dotykowy slider porównujący stan włosów przed i po zabiegu szycia siwizny.
+
+### 2. Niezależny Silnik Rezerwacji (Headless Multi-Tenant Booking Engine)
+- **Dostępność:** Działa jako wysuwany drawer/modal na stronie głównej oraz pod adresem `/rezerwacja`.
+- **Krok 1 (Usługa):** Wybór zabiegu i ewentualnej długości włosów (czas trwania + cena).
+- **Krok 2 (Stylistka):** Wybór pracownika (Pani Iryna, Bella lub *"Dowolna dostępna"*)[cite: 1].
+- **Krok 3 (Termin):** Kalendarz dni + dynamicznie kalkulowana siatka wolnych slotów wykluczająca nakładanie się wizyt i uwzględniająca bufor techniczny.
+- **Krok 4 (Dane):** Imię, telefon, e-mail i natychmiastowe potwierdzenie SMS/e-mail bez zakładania konta przez klienta.
+
+### 3. CMS dla Właścicielki Salonu (`/admin` via Sanity Studio)
+- W pełni wizualny, prosty panel bez kodu i bez skomplikowanych baz danych.
+- Błyskawiczna edycja cen, dodawanie nowych zdjęć metamorfoz z telefonu.
+- **Pasek Komunikatów i Urlopów:** Przełącznik aktywujący banner (np. *"Przerwa urlopowa w dniach 10-18.08"*).
+
+### 4. Pulpit Dnia dla Personelu Salonu (`/salon/kalendarz`)
+- Widok kalendarza w podziale na kolumny stylistek (Iryna / Bella)[cite: 1].
+- Przycisk szybkiego dodania wizyty stacjonarnej/telefonicznej (natychmiastowe zablokowanie terminu w sieci).
+- Oznaczanie statusów: *Potwierdzona, Zrealizowana, Odwołana, Nieobecność (No-show)*.
+
+---
+
+## 🗄️ Database Schema & Security (Supabase PostgreSQL)
+
+```sql
+create extension if not exists "uuid-ossp";
+
+-- Typy domenowe
+create type appointment_status as enum ('confirmed', 'cancelled', 'completed', 'no_show');
+
+-- 1. Tenants (Multi-tenant gotowy do wdrożenia w kolejnych salonach)
+create table tenants (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  slug text unique not null, -- 'panifryzjerka'
+  phone text not null,
+  email text not null,
+  slot_interval_minutes int default 15 not null,
+  created_at timestamptz default now() not null
+);
+
+-- 2. Personel / Stylistki
+create table staff_members (
+  id uuid default gen_random_uuid() primary key,
+  tenant_id uuid references tenants(id) on delete cascade not null,
+  name text not null, -- 'Iryna', 'Bella'
+  role text default 'Stylistka fryzur' not null,
+  avatar_url text,
+  is_active boolean default true not null
+);
+
+-- 3. Usługi w systemie rezerwacji
+create table services (
+  id uuid default gen_random_uuid() primary key,
+  tenant_id uuid references tenants(id) on delete cascade not null,
+  name text not null, -- '#szycieSiwizny', 'Strzyżenie damskie', 'Afroloki'
+  category text not null,
+  duration_minutes int not null,
+  buffer_time_minutes int default 15 not null,
+  price_min_cents int not null,
+  price_max_cents int,
+  is_active boolean default true not null
+);
+
+-- 4. Powiązanie Stylistka <-> Usługa
+create table staff_services (
+  staff_id uuid references staff_members(id) on delete cascade not null,
+  service_id uuid references services(id) on delete cascade not null,
+  primary key (staff_id, service_id)
+);
+
+-- 5. Harmonogram godzin pracy
+create table working_hours (
+  id uuid default gen_random_uuid() primary key,
+  staff_id uuid references staff_members(id) on delete cascade not null,
+  day_of_week int not null check (day_of_week between 0 and 6), -- 0=Niedziela, 1=Poniedziałek
+  start_time time not null, -- '09:00'
+  end_time time not null    -- '19:00'
+);
+
+-- 6. Urlopy i nieobecności
+create table time_offs (
+  id uuid default gen_random_uuid() primary key,
+  staff_id uuid references staff_members(id) on delete cascade not null,
+  start_date timestamptz not null,
+  end_date timestamptz not null,
+  reason text
+);
+
+-- 7. Wizyty i Rezerwacje
+create table appointments (
+  id uuid default gen_random_uuid() primary key,
+  tenant_id uuid references tenants(id) on delete cascade not null,
+  service_id uuid references services(id) not null,
+  staff_id uuid references staff_members(id) not null,
+  customer_name text not null,
+  customer_phone text not null,
+  customer_email text,
+  notes text,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  status appointment_status default 'confirmed' not null,
+  created_at timestamptz default now() not null
+);
+
+-- Indeksy pod szybkie wyszukiwanie wolnych slotów
+create index idx_appointments_lookup on appointments (staff_id, start_time, end_time);
+create index idx_services_tenant on services (tenant_id);
+
+-- Row Level Security (RLS)
+alter table tenants enable row level security;
+alter table staff_members enable row level security;
+alter table services enable row level security;
+alter table staff_services enable row level security;
+alter table working_hours enable row level security;
+alter table time_offs enable row level security;
+alter table appointments enable row level security;
+
+-- Publiczne Polityki Odczytu
+create policy "Public read services" on services for select using (is_active = true);
+create policy "Public read staff" on staff_members for select using (is_active = true);
+create policy "Public read working hours" on working_hours for select using (true);
+create policy "Public read appointments for slots" on appointments for select using (true);
+
+-- Publiczne Tworzenie Wizyty
+create policy "Public insert appointment" on appointments for insert with check (true);
+
+-- Dostęp Administracyjny dla Zalogowanego Personelu
+create policy "Staff manage appointments" on appointments for all using (auth.role() = 'authenticated');
+create policy "Staff manage hours" on working_hours for all using (auth.role() = 'authenticated');
+create policy "Staff manage time offs" on time_offs for all using (auth.role() = 'authenticated');
+
+---
+
+## 📂 Skalowalna Struktura Katalogów
+
+```plaintext
+├── app/
+│   ├── layout.tsx                     # Global Root Layout: fonty, schemat LocalBusiness JSON-LD
+│   ├── not-found.tsx                  # Dedykowany 404 w stylistyce salonu
+│   ├── error.tsx                      # Client error boundary
+│   ├── (site)/
+│   │   ├── layout.tsx                 # Header z telefonem, MobileBottomBar, Footer
+│   │   ├── page.tsx                   # Hero (#szycieSiwizny), Trust Badges, Opinie, Metamorfozy, Mapa[cite: 1]
+│   │   ├── cennik/page.tsx            # Pełny cennik z podziałem na długości włosów i CTA rezerwacji
+│   │   ├── metamorfozy/page.tsx       # Galeria suwaków Przed / Po
+│   │   ├── o-nas/page.tsx             # Historia salonu, misja, zespół Iryna & Bella[cite: 1]
+│   │   └── kontakt/page.tsx           # Dojazd, bezpłatny parking, godziny otwarcia[cite: 1]
+│   ├── (booking)/
+│   │   └── rezerwacja/
+│   │       ├── page.tsx               # Dedykowany, czysty proces rezerwacji online
+│   │       └── sukces/page.tsx        # Ekran podsumowania z opcją dodania do Kalendarza Google
+│   ├── (dashboard)/
+│   │   └── salon/
+│   │       ├── layout.tsx             # Shell dla fryzjerek z autoryzacją Supabase
+│   │       ├── kalendarz/page.tsx     # Widok dnia z podziałem na Irynę i Bellę[cite: 1]
+│   │       └── klienci/page.tsx       # Baza numerów telefonów i historia wizyt
+│   ├── (studio)/
+│   │   └── admin/[[...tool]]/page.tsx # Osadzone Sanity Studio CMS
+│   ├── actions/
+│   │   ├── booking.ts                 # Server action: weryfikacja dostępności i zapis wizyty
+│   │   └── calendar-admin.ts          # Server action: dodawanie wizyt z telefonu przez pracownika
+│   └── api/
+│       ├── slots/route.ts             # API kalkulacji wolnych terminów w czasie rzeczywistym
+│       └── cron/reminders/route.ts    # Vercel Cron: wysyłka SMS z przypomnieniem o 18:00 dzień wcześniej
+├── components/
+│   ├── layout/
+│   │   ├── navbar.tsx                 # Górny pasek z adresem, telefonem i wyborem języka PL/RU[cite: 1]
+│   │   ├── mobile-bar.tsx             # Dolny pasek akcji: "Zadzwoń" i "Zarezerwuj"
+│   │   └── footer.tsx                 # Stopka z godzinami pracy i udogodnieniami[cite: 1]
+│   ├── home/
+│   │   ├── hero.tsx                   # Główna sekcja z hasłem, tagami i kartą 4.9★[cite: 1]
+│   │   ├── trust-badges.tsx           # Ikony: Psy, Parking, Niepełnosprawni[cite: 1]
+│   │   └── reviews-card.tsx           # Pływająca karta opinii z informacją o zespole[cite: 1]
+│   ├── booking/
+│   │   ├── booking-drawer.tsx         # Wysuwany boczny panel rezerwacji na stronie
+│   │   ├── step-service.tsx           # Krok 1: Wybór zabiegu
+│   │   ├── step-staff.tsx             # Krok 2: Wybór stylistki (Iryna, Bella, Dowolna)[cite: 1]
+│   │   ├── step-date-time.tsx         # Krok 3: Wybór dnia i kafelków godzinowych
+│   │   └── step-client-form.tsx       # Krok 4: Formularz telefonu i imienia
+│   ├── visual/
+│   │   └── before-after-slider.tsx    # Dotykowy suwak porównania metamorfoz
+│   └── ui/                            # Shadcn UI dostosowane do palety Berry/Blush
+├── store/
+│   └── use-booking-store.ts           # Zustand store: wybrana usługa, pracownik, data i slot
+├── sanity/
+│   ├── schemas/                       # Schematy: serviceItem, transformation, salonSettings
+│   ├── client.ts                      # Klient odczytu z pamięcią podręczną ISR
+│   └── image.ts                       # Optymalizator zdjęć Sanity CDN
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts                  # Klient przeglądarkowy
+│   │   └── server.ts                  # Klient dla Server Components & Server Actions
+│   ├── booking/
+│   │   ├── slot-calculator.ts         # Matematyka: nakładanie wizyt, bufory, godziny pracy
+│   │   └── sms.ts                     # Integracja SMSAPI / bramka SMS
+│   └── utils.ts                       # Formatowanie walut, dat i prefiksów tel: ```
