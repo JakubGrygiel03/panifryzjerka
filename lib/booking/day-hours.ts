@@ -39,7 +39,7 @@ export function buildHourCells(
     let cursor = zonedLocalToUtc(date, window.startTime.slice(0, 5), SALON.timezone);
     const windowEnd = zonedLocalToUtc(date, window.endTime.slice(0, 5), SALON.timezone);
     while (cursor < windowEnd) {
-      const next = new Date(Math.min(cursor.getTime() + 60 * 60_000, windowEnd.getTime()));
+      const next = new Date(Math.min(cursor.getTime() + 30 * 60_000, windowEnd.getTime()));
       if (next.getTime() - cursor.getTime() < 30 * 60_000) break;
       const block = blocks.find((row) => hits(cursor, next, { start: row.startsAt, end: row.endsAt }));
       const booked = appointments.some((row) => hits(cursor, next, row));
@@ -62,7 +62,7 @@ export function mergeHourStarts(startsAt: string[]) {
   let currentStart = "";
   let currentEnd = "";
   for (const start of sorted) {
-    const end = new Date(new Date(start).getTime() + 60 * 60_000).toISOString();
+    const end = new Date(new Date(start).getTime() + 30 * 60_000).toISOString();
     if (!currentEnd || start !== currentEnd) {
       if (currentStart) ranges.push({ startsAt: currentStart, endsAt: currentEnd });
       currentStart = start;

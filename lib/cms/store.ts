@@ -166,7 +166,7 @@ export function getFaqItems(): FaqItem[] {
       const aRu = String(item.ru?.a ?? "").trim();
       return { q, a, ru: qRu || aRu ? { q: qRu, a: aRu } : undefined };
     })
-    .filter((item) => item.q && item.a);
+    .filter((item) => item.q.trim() && item.a.trim());
   return clean.length ? clean : FAQ.map((item) => ({ q: item.q, a: item.a }));
 }
 

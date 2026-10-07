@@ -3,12 +3,16 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
+import { t } from "@/lib/i18n";
+import { useLocaleStore } from "@/store/use-locale-store";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import type { ServiceGroup } from "@/lib/booking/types";
 import { DEFAULT_LENGTH_GUIDE, type LengthGuide } from "@/lib/content/length-guide";
 import { useBookingStore } from "@/store/use-booking-store";
 
 export function BookingDrawer({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { services: ServiceGroup[]; lengthGuide?: LengthGuide }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = t(locale);
   const pathname = usePathname();
   const open = useBookingStore((state) => state.open);
   const closeBooking = useBookingStore((state) => state.closeBooking);
@@ -39,9 +43,9 @@ export function BookingDrawer({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: 
       >
         <div className="flex shrink-0 items-center justify-between border-b border-pink-100 px-5 py-4 sm:px-6">
           <h2 id="booking-title" className="font-display text-2xl">
-            Rezerwacja
+            {locale === "RU" ? "Запись" : "Rezerwacja"}
           </h2>
-          <button type="button" onClick={closeBooking} aria-label="Zamknij" className="rounded-full p-2 hover:bg-blush">
+          <button type="button" onClick={closeBooking} aria-label={copy.close} className="rounded-full p-2 hover:bg-blush">
             <X size={18} />
           </button>
         </div>

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { saveReviews } from "@/actions/cms-admin";
 import { AdminPageHeader, Field, SaveBar, fieldClass, useSave } from "@/components/admin/editor";
 import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 import type { Review } from "@/lib/content/types";
 
 export function ReviewsForm({ reviews }: { reviews: Review[] }) {
   const locale = useWritingLocale();
+  const copy = adminCopy(locale);
   const [rows, setRows] = useState(reviews);
   const save = useSave(() => saveReviews(rows, locale));
 
@@ -23,7 +25,14 @@ export function ReviewsForm({ reviews }: { reviews: Review[] }) {
 
   return (
     <form onSubmit={save.onSubmit}>
-      <AdminPageHeader title="Opinie" text="Cytaty na stronie głównej. Zostaw imię, zabieg i treść tak, jak mają być widoczne." />
+      <AdminPageHeader title={copy.reviewsTitle} text={copy.reviewsText} />
+      <button
+        type="button"
+        className="mb-4 inline-flex rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white"
+        onClick={() => setRows((current) => [...current, { name: "", service: "", text: "" }])}
+      >
+        {copy.addReview}
+      </button>
       <div className="grid max-w-3xl gap-4">
         {rows.map((review, index) => (
           <section key={`${review.name}-${index}`} className="grid gap-3 rounded-2xl bg-white p-5 ring-1 ring-ink/10">
@@ -55,13 +64,6 @@ export function ReviewsForm({ reviews }: { reviews: Review[] }) {
           </section>
         ))}
       </div>
-      <button
-        type="button"
-        className="mt-4 text-sm font-semibold text-ink"
-        onClick={() => setRows((current) => [...current, { name: "", service: "", text: "" }])}
-      >
-        Dodaj opinię
-      </button>
       <SaveBar pending={save.pending} message={save.message} />
     </form>
   );

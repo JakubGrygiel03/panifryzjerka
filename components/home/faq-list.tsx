@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { t } from "@/lib/i18n";
+import { useLocaleStore } from "@/store/use-locale-store";
 
 export function FaqList({ items, searchable = false }: { items: readonly { q: string; a: string }[]; searchable?: boolean }) {
+  const copy = t(useLocaleStore((state) => state.locale));
   const [open, setOpen] = useState<number | null>(0);
   const [query, setQuery] = useState("");
   const visible = useMemo(() => {
@@ -18,17 +21,17 @@ export function FaqList({ items, searchable = false }: { items: readonly { q: st
     <div>
       {searchable ? (
         <label className="mb-4 block text-sm font-medium text-ink">
-          Szukaj pytania
+          {copy.searchQuestion}
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="mt-2 w-full rounded-full bg-white px-4 py-3 text-sm ring-1 ring-ink/10 outline-none"
-            placeholder="np. pies, parking, odwołanie"
+            placeholder={copy.searchQuestionHint}
           />
         </label>
       ) : null}
       <div className="overflow-hidden rounded-[1.75rem] bg-white ring-1 ring-ink/10">
-        {visible.length === 0 ? <p className="px-6 py-5 text-sm text-ink">Nie ma takiego pytania.</p> : null}
+        {visible.length === 0 ? <p className="px-6 py-5 text-sm text-ink">{copy.noQuestion}</p> : null}
         {visible.map(({ item, index }) => {
           const isOpen = open === index || query.trim().length > 0;
           return (

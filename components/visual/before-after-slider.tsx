@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { t } from "@/lib/i18n";
+import { useLocaleStore } from "@/store/use-locale-store";
 
 function Photo({ src, alt, split, side }: { src: string; alt: string; split: boolean; side?: "left" | "right" }) {
   const sizes = split ? "(min-width: 1280px) 50vw, 100vw" : "(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 92vw";
@@ -36,6 +38,7 @@ export function BeforeAfterSlider({
   split?: boolean;
   beforeSide?: "left" | "right";
 }) {
+  const copy = t(useLocaleStore((state) => state.locale));
   const frame = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(52);
   const afterSide = beforeSide === "left" ? "right" : "left";
@@ -82,8 +85,8 @@ export function BeforeAfterSlider({
         >
           ↔
         </div>
-        <span className="absolute top-3 left-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink">Przed</span>
-        <span className="absolute top-3 right-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink">Po</span>
+        <span className="absolute top-3 left-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink">{copy.before}</span>
+        <span className="absolute top-3 right-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink">{copy.after}</span>
       </div>
       <figcaption className="px-4 py-4">
         <p className="font-display text-2xl text-ink">{title}</p>

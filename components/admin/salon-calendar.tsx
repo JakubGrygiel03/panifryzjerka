@@ -6,6 +6,8 @@ import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import { blockHours, cancelVisit, releaseHour, removeBlock } from "@/actions/cms-calendar";
 import type { CalendarDay } from "@/lib/booking/calendar-day";
 import { formatWarsawTime } from "@/lib/utils";
+import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 
 const WEEKDAYS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 
@@ -39,6 +41,7 @@ export function SalonCalendar({
   lead: number;
   vapidPublicKey: string;
 }) {
+  const copy = adminCopy(useWritingLocale());
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [selected, setSelected] = useState<string[]>([]);
@@ -137,7 +140,7 @@ export function SalonCalendar({
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-4xl text-ink">Terminarz</h1>
+          <h1 className="font-display text-4xl text-ink">{copy.calendarTitle}</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-mauve">
             <span className="inline-block size-2 animate-pulse rounded-full bg-berry" aria-hidden />
             Odświeża się sam{refreshedAt ? ` · ${refreshedAt}` : ""}
@@ -201,9 +204,9 @@ export function SalonCalendar({
 
       <section className="mt-4 rounded-[1.75rem] bg-white p-4 ring-1 ring-pink-100 sm:p-6">
         <h2 className="font-display text-2xl capitalize">{heading}</h2>
-        <p className="mt-1 text-sm text-mauve">Kto jest umówiony i na jaką usługę.</p>
+        <p className="mt-1 text-sm text-mauve">{copy.whoBooked}</p>
         {day.visits.length === 0 ? (
-          <p className="mt-3 text-sm text-mauve">Tego dnia nikt nie jest umówiony.</p>
+          <p className="mt-3 text-sm text-mauve">{copy.nobody}</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {day.visits.map((visit) => (
@@ -229,7 +232,7 @@ export function SalonCalendar({
                     }
                   }}
                 >
-                  Odwołaj
+                  {copy.cancelVisit}
                 </button>
               </li>
             ))}
@@ -238,17 +241,15 @@ export function SalonCalendar({
       </section>
 
       <section className="mt-4 rounded-[1.75rem] bg-white p-4 ring-1 ring-pink-100 sm:p-6">
-        <h2 className="font-display text-2xl">Niedostępne godziny</h2>
-        <p className="mt-2 text-sm leading-6 text-mauve">
-          Zaznacz kilka godzin i oznacz je jednym przyciskiem. Klientki nie zobaczą tych terminów. Jedno stuknięcie w zajętą godzinę zwalnia tylko ją.
-        </p>
-        {day.closed ? <p className="mt-4 text-sm text-ink">W niedzielę salon jest nieczynny.</p> : null}
+        <h2 className="font-display text-2xl">{copy.unavailable}</h2>
+        <p className="mt-2 text-sm leading-6 text-mauve">{copy.unavailableHint}</p>
+        {day.closed ? <p className="mt-4 text-sm text-ink">{copy.sundayClosed}</p> : null}
         {day.blocks.length > 0 ? (
           <ul className="mt-4 space-y-2">
             {day.blocks.map((block) => (
               <li key={block.id} className="flex items-center justify-between gap-3 rounded-2xl bg-[#F8D5E6] px-4 py-3 text-sm">
                 <span>
-                  {formatWarsawTime(block.startsAt)}–{formatWarsawTime(block.endsAt)} · niedostępna
+                  {formatWarsawTime(block.startsAt)}–{formatWarsawTime(block.endsAt)} · {copy.blockedWord}
                 </span>
                 <button
                   type="button"
@@ -256,7 +257,7 @@ export function SalonCalendar({
                   className="font-semibold text-berry disabled:opacity-50"
                   onClick={() => run(() => removeBlock(block.id))}
                 >
-                  Usuń całość
+                  {copy.removeBlock}
                 </button>
               </li>
             ))}
@@ -315,7 +316,7 @@ export function SalonCalendar({
               });
             }}
           >
-            Oznacz {selectedLabels.length === 1 ? "tę godzinę" : `${selectedLabels.length} godz.`} jako niedostępne
+            Oznacz {selectedLabels.length === 1 ? "tę półgodzinę" : `${selectedLabels.length} półgodziny`} jako niedostępne
           </button>
         ) : null}
         {error ? <p className="mt-3 text-sm text-berry">{error}</p> : null}

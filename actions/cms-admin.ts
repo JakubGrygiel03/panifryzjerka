@@ -107,6 +107,28 @@ export async function saveSettings(input: {
   return savedMessage(failed);
 }
 
+const mailSchema = z.object({
+  emailClientSubject: z.string().trim().min(1).max(140),
+  emailClientBody: z.string().trim().min(1).max(2000),
+  emailSalonSubject: z.string().trim().min(1).max(140),
+  emailSalonBody: z.string().trim().min(1).max(2000),
+  emailReminderSubject: z.string().trim().min(1).max(140),
+  emailReminderBody: z.string().trim().min(1).max(2000),
+  emailReviewSubject: z.string().trim().min(1).max(140),
+  emailReviewBody: z.string().trim().min(1).max(2000),
+});
+
+export async function saveMails(input: z.infer<typeof mailSchema>) {
+  await requireAdmin();
+  const parsed = mailSchema.parse(input);
+  const current = readCms();
+  await writeCms({
+    ...current,
+    settings: { ...(current.settings ?? {}), ...parsed },
+  });
+  return "Zapisane. Kolejne potwierdzenia pójdą z tą treścią.";
+}
+
 const lengthGuideSchema = z.object({
   note: z.string().trim().min(1).max(240),
   items: z
@@ -244,12 +266,12 @@ export async function saveFaq(faq: FaqItem[], source: Locale = "PL") {
   const previous = getFaqItems();
   let failed = 0;
   const clean: FaqItem[] = [];
-  for (const row of loose) {
+  for (const row of loose.filter((item) => item.q || item.a || item.ru?.q || item.ru?.a)) {
     const before = previous.find((item) => item.q === row.q) ?? previous.find((item) => item.ru?.q && item.ru.q === row.ru?.q);
     const question = await alignPair(source, before?.q ?? "", row.q, before?.ru?.q ?? "", row.ru?.q ?? "");
     const answer = await alignPair(source, before?.a ?? "", row.a, before?.ru?.a ?? "", row.ru?.a ?? "");
     if (question.failed || answer.failed) failed += 1;
-    if (!question.pl || !answer.pl) continue;
+    if (!question.pl.trim() || !answer.pl.trim()) continue;
     clean.push({ q: question.pl, a: answer.pl, ru: { q: question.ru, a: answer.ru } });
   }
   if (clean.length < 1) throw new Error("Zostaw przynajmniej jedno pytanie i odpowiedź.");

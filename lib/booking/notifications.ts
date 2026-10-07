@@ -1,5 +1,8 @@
 import { SALON } from "@/lib/brand";
 import { staffName } from "@/lib/booking/catalog";
+import { brandedHtml, fillMail, mailTemplates, type MailFacts, type MailKind } from "@/lib/booking/mail-copy";
+import { adminEmail } from "@/lib/account/session";
+import { readCms } from "@/lib/cms/store";
 import { formatWarsawDate, formatWarsawTime } from "@/lib/utils";
 
 function icsStamp(iso: string): string {
@@ -53,34 +56,9 @@ export function googleCalendarUrl(input: {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export async function sendAppointmentEmail(input: {
-  to: string;
-  customerName: string;
-  serviceName: string;
-  staffName: string;
-  startsAt: string;
-  endsAt: string;
-  ics: string;
-  googleCalendarUrl: string;
-}): Promise<boolean> {
+async function postMail(input: { to: string; subject: string; html: string; ics?: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || !input.to) return false;
-
-  const when = `${formatWarsawDate(input.startsAt)}, ${formatWarsawTime(input.startsAt)}`;
-  const html = `
-    <div style="font-family:Georgia,serif;color:#1F1A24;line-height:1.5">
-      <p>Cześć ${escapeHtml(input.customerName)},</p>
-      <p>wizyta w <strong>${SALON.name}</strong> jest potwierdzona.</p>
-      <p><strong>${escapeHtml(input.serviceName)}</strong><br/>
-      ${escapeHtml(input.staffName)}<br/>
-      ${escapeHtml(when)}</p>
-      <p>${SALON.street}<br/>${SALON.postalCode} ${SALON.city}<br/>
-      <a href="${SALON.mapsUrl}">Otwórz w Google Maps</a></p>
-      <p><a href="${input.googleCalendarUrl}">Dodaj do Kalendarza Google</a></p>
-      <p>Do zobaczenia,<br/>${SALON.name}</p>
-    </div>
-  `;
-
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -90,18 +68,61 @@ export async function sendAppointmentEmail(input: {
     body: JSON.stringify({
       from: process.env.RESEND_FROM_EMAIL ?? "PaniFryzjerka <onboarding@resend.dev>",
       to: [input.to],
-      subject: `Potwierdzenie wizyty — ${SALON.name}`,
-      html,
-      attachments: [
-        {
-          filename: "wizyta.ics",
-          content: Buffer.from(input.ics, "utf8").toString("base64"),
-        },
-      ],
+      subject: input.subject,
+      html: input.html,
+      attachments: input.ics
+        ? [{ filename: "wizyta.ics", content: Buffer.from(input.ics, "utf8").toString("base64") }]
+        : undefined,
     }),
   });
-
   return response.ok;
+}
+
+export async function sendFilledMail(input: { to: string; subject: string; body: string; facts?: MailFacts }) {
+  return postMail({ to: input.to, subject: input.subject, html: brandedHtml(input.body, input.facts) });
+}
+
+export async function sendBookingMails(input: {
+  to: string;
+  customerName: string;
+  serviceName: string;
+  startsAt: string;
+  ics: string;
+}): Promise<boolean> {
+  const templates = mailTemplates(readCms().settings);
+  const values = {
+    imie: input.customerName,
+    usluga: input.serviceName,
+    termin: `${formatWarsawDate(input.startsAt)}, ${formatWarsawTime(input.startsAt)}`,
+    adres: `${SALON.street}, ${SALON.postalCode} ${SALON.city}`,
+    telefon: SALON.phoneDisplay,
+  };
+  const clientOk = await postMail({
+    to: input.to,
+    subject: fillMail(templates.emailClientSubject, values),
+    html: brandedHtml(fillMail(templates.emailClientBody, values), values),
+    ics: input.ics,
+  });
+  await postMail({
+    to: adminEmail(),
+    subject: fillMail(templates.emailSalonSubject, values),
+    html: brandedHtml(fillMail(templates.emailSalonBody, values), values),
+  });
+  return clientOk;
+}
+
+export function mailPreview(kind: MailKind, templates = mailTemplates(readCms().settings)) {
+  const values = {
+    imie: "Anna",
+    usluga: "Szycie siwizny",
+    termin: "czwartek, 12:30",
+    adres: `${SALON.street}, ${SALON.postalCode} ${SALON.city}`,
+    telefon: SALON.phoneDisplay,
+    opinia: SALON.reviewsUrl,
+  };
+  const subject = kind === "salon" ? templates.emailSalonSubject : kind === "reminder" ? templates.emailReminderSubject : kind === "review" ? templates.emailReviewSubject : templates.emailClientSubject;
+  const body = kind === "salon" ? templates.emailSalonBody : kind === "reminder" ? templates.emailReminderBody : kind === "review" ? templates.emailReviewBody : templates.emailClientBody;
+  return { subject: fillMail(subject, values), html: brandedHtml(fillMail(body, values), values) };
 }
 
 export async function sendAppointmentSms(phone: string, startsAt: string): Promise<boolean> {
@@ -123,10 +144,3 @@ export async function sendAppointmentSms(phone: string, startsAt: string): Promi
   return response.ok;
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}

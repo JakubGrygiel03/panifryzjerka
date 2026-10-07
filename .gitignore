@@ -10,4 +10,9 @@ data/push-subscriptions.json
 data/google-reviews-cache.json
 data/media-index.json
 data/*.tmp
+data/analytics.json
+data/desk.json
 *.tsbuildinfo
+
+.vercel
+.env*

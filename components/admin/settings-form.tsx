@@ -3,6 +3,8 @@
 import { saveSettings } from "@/actions/cms-admin";
 import { AdminPageHeader, Field, SaveBar, fieldClass, useSave } from "@/components/admin/editor";
 import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
+import { HALF_HOURS, joinRange, splitRange } from "@/lib/booking/hours";
 import type { OpeningHour } from "@/lib/content/types";
 import { useState } from "react";
 
@@ -18,6 +20,7 @@ type SettingsFormProps = {
 
 export function SettingsForm(props: SettingsFormProps) {
   const locale = useWritingLocale();
+  const copy = adminCopy(locale);
   const [phone, setPhone] = useState(props.phone);
   const [noticeText, setNoticeText] = useState(props.noticeText);
   const [noticeTextRu, setNoticeTextRu] = useState(props.noticeTextRu ?? "");
@@ -39,16 +42,16 @@ export function SettingsForm(props: SettingsFormProps) {
 
   return (
     <form onSubmit={save.onSubmit}>
-      <AdminPageHeader title="Ustawienia" text="Pasek na górze strony, telefon, godziny i ocena Google. To samo widzi klientka po zapisaniu." />
+      <AdminPageHeader title={copy.settingsTitle} text={copy.settingsText} />
       <div className="grid max-w-3xl gap-4 rounded-2xl bg-white p-5 ring-1 ring-ink/10">
-        <Field label="Telefon na stronie">
+        <Field label={copy.phone}>
           <input className={fieldClass} value={phone} onChange={(event) => setPhone(event.target.value)} />
         </Field>
         <label className="flex items-center gap-2 text-sm font-medium">
           <input type="checkbox" checked={noticeEnabled} onChange={(event) => setNoticeEnabled(event.target.checked)} />
-          Pokaż pasek ogłoszenia
+          {copy.noticeToggle}
         </label>
-        <Field label="Treść paska, na przykład urlop">
+        <Field label={copy.notice}>
           <input
             className={fieldClass}
             value={locale === "RU" ? noticeTextRu : noticeText}
@@ -57,15 +60,16 @@ export function SettingsForm(props: SettingsFormProps) {
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Ocena Google">
+          <Field label={copy.rating}>
             <input className={fieldClass} inputMode="decimal" value={googleRating} onChange={(event) => setGoogleRating(event.target.value)} />
           </Field>
-          <Field label="Liczba opinii">
+          <Field label={copy.reviewCount}>
             <input className={fieldClass} inputMode="numeric" value={googleReviewCount} onChange={(event) => setGoogleReviewCount(event.target.value)} />
           </Field>
         </div>
         <div className="grid gap-3">
-          <p className="text-sm font-medium">Godziny</p>
+          <p className="text-sm font-medium">{copy.hours}</p>
+          <p className="text-sm text-mauve">{copy.hoursHint}</p>
           {openingHours.map((row, index) => (
             <div key={`${row.day}-${index}`} className="grid gap-2 sm:grid-cols-2">
               <input
@@ -76,12 +80,10 @@ export function SettingsForm(props: SettingsFormProps) {
                   setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, [locale === "RU" ? "dayRu" : "day"]: event.target.value } : item)))
                 }
               />
-              <input
-                className={fieldClass}
-                value={locale === "RU" ? (row.hoursRu ?? "") : row.hours}
-                placeholder={locale === "RU" ? row.hours : undefined}
-                onChange={(event) =>
-                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, [locale === "RU" ? "hoursRu" : "hours"]: event.target.value } : item)))
+              <HourRange
+                value={locale === "RU" ? (row.hoursRu || row.hours) : row.hours}
+                onChange={(value) =>
+                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, hours: value, hoursRu: value } : item)))
                 }
               />
             </div>
@@ -90,5 +92,39 @@ export function SettingsForm(props: SettingsFormProps) {
       </div>
       <SaveBar pending={save.pending} message={save.message} />
     </form>
+  );
+}
+
+function HourRange({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const range = splitRange(value);
+  const start = range?.start ?? "closed";
+  const end = range?.end ?? "20:00";
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+      <select
+        className={fieldClass}
+        value={start}
+        onChange={(event) => {
+          if (event.target.value === "closed") onChange("nieczynne");
+          else onChange(joinRange(event.target.value, end));
+        }}
+      >
+        <option value="closed">nieczynne</option>
+        {HALF_HOURS.map((hour) => (
+          <option key={`start-${hour}`}>{hour}</option>
+        ))}
+      </select>
+      <span className="text-mauve">–</span>
+      <select
+        className={fieldClass}
+        disabled={!range}
+        value={end}
+        onChange={(event) => onChange(joinRange(range?.start ?? "09:00", event.target.value))}
+      >
+        {HALF_HOURS.map((hour) => (
+          <option key={`end-${hour}`}>{hour}</option>
+        ))}
+      </select>
+    </div>
   );
 }

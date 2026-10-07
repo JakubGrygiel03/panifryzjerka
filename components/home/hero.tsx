@@ -30,7 +30,8 @@ export function Hero({
   lead: string;
   slides: { src: string; devices?: DeviceVisibility }[];
 }) {
-  const copy = t(useLocaleStore((state) => state.locale));
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = t(locale);
   const openBooking = useBookingStore((state) => state.openBooking);
   const [bucket, setBucket] = useState<"phone" | "tablet" | "desktop">("desktop");
   const [index, setIndex] = useState(0);
@@ -99,7 +100,7 @@ export function Hero({
           <Image
             key={`${src}-${photoIndex}`}
             src={src}
-            alt="Praca salonu PaniFryzjerka, bez napisu na zdjęciu"
+            alt={locale === "RU" ? "Работа салона PaniFryzjerka" : "Praca salonu PaniFryzjerka, bez napisu na zdjęciu"}
             fill
             priority={photoIndex === 0}
             quality={68}
@@ -113,7 +114,7 @@ export function Hero({
               <button
                 key={`${src}-dot-${photoIndex}`}
                 type="button"
-                aria-label={`Pokaż zdjęcie ${photoIndex + 1}`}
+                aria-label={locale === "RU" ? `Показать фото ${photoIndex + 1}` : `Pokaż zdjęcie ${photoIndex + 1}`}
                 onClick={() => setIndex(photoIndex)}
                 className={`h-2 rounded-full bg-white transition-all ${photoIndex === index ? "w-6" : "w-2 opacity-70"}`}
               />

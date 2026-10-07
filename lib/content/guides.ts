@@ -23,7 +23,7 @@ export const FAQ = [
   },
   {
     q: "Czy muszę zakładać konto, żeby się zapisać?",
-    a: "Nie. Wystarczy imię i telefon. E-mail jest opcjonalny i służy tylko do potwierdzenia.",
+    a: "Nie. Wystarczy imię, telefon i e-mail do potwierdzenia wizyty.",
   },
   {
     q: "Co jeśli spóźnię się na wizytę?",

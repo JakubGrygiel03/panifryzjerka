@@ -1,8 +1,13 @@
 import Image from "next/image";
 import type { TeamMember } from "@/lib/content/types";
 import { irynaPhoto } from "@/lib/content/gallery";
+import type { Locale } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 
-export function Team({ members }: { members: TeamMember[] }) {
+export function Team({ members, locale = "PL" }: { members: TeamMember[]; locale?: Locale }) {
+  const copy = t(locale);
+  const text = (value: string) => (locale === "RU" ? ruPhrase(value) : value);
   const dog = members.find((member) => member.id === "bella-pies");
   const stylists = members.filter((member) => member.id !== "bella-pies");
 
@@ -22,13 +27,13 @@ export function Team({ members }: { members: TeamMember[] }) {
         <div className="space-y-10 p-8 sm:p-10">
           {stylists.map((member) => (
             <article key={member.id}>
-              <p className="eyebrow">Przy fotelu</p>
+              <p className="eyebrow">{copy.atChair}</p>
               <h3 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">{member.name}</h3>
-              <p className="mt-3 max-w-md text-[15px] leading-7 text-ink/75">{member.bio}</p>
+              <p className="mt-3 max-w-md text-[15px] leading-7 text-ink/75">{text(member.bio)}</p>
               <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
                 {member.specialties.map((item) => (
                   <li key={item} className="border-b border-berry/25 pb-0.5 text-ink">
-                    {item}
+                    {text(item)}
                   </li>
                 ))}
               </ul>
@@ -37,12 +42,12 @@ export function Team({ members }: { members: TeamMember[] }) {
         </div>
         {dog ? (
           <aside className="flex flex-col justify-between bg-ink px-8 py-10 text-white sm:px-10">
-            <p className="text-base font-semibold text-white">Pies salonu</p>
+            <p className="text-base font-semibold text-white">{copy.dog}</p>
             <div>
               <h3 className="font-display text-4xl">{dog.name}</h3>
-              <p className="mt-4 max-w-sm text-sm leading-7 text-white/75">{dog.bio}</p>
+              <p className="mt-4 max-w-sm text-sm leading-7 text-white/75">{text(dog.bio)}</p>
             </div>
-            <p className="mt-10 text-sm text-pink-100">Spokojne psy są tu mile widziane.</p>
+            <p className="mt-10 text-sm text-pink-100">{copy.dogsWelcome}</p>
           </aside>
         ) : null}
       </div>

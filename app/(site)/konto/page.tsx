@@ -4,6 +4,8 @@ import { getCustomer } from "@/lib/account/session";
 import { findPublishedVariant } from "@/lib/cms/store";
 import { listAppointments } from "@/lib/booking/repository";
 import { formatWarsawDate, formatWarsawTime } from "@/lib/utils";
+import { ruPhrase } from "@/lib/i18n/phrases";
+import { getRequestLocale } from "@/lib/request-locale";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,8 @@ const STATUS: Record<string, string> = {
 };
 
 export default async function AccountPage() {
+  const locale = await getRequestLocale();
+  const say = (text: string) => (locale === "RU" ? ruPhrase(text) : text);
   const customer = await getCustomer();
   if (!customer) redirect("/konto/logowanie");
   const rows = (await listAppointments()).filter((row) => {
@@ -25,7 +29,7 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <p className="text-sm font-semibold text-berry">Konto</p>
+      <p className="text-sm font-semibold text-berry">{say("Konto")}</p>
       <h1 className="mt-2 font-display text-4xl text-ink">{customer.name}</h1>
       <p className="mt-2 text-base text-ink/80">
         {customer.email}
@@ -33,26 +37,26 @@ export default async function AccountPage() {
       </p>
       <div className="mt-6 flex gap-3">
         <Link href="/rezerwacja" className="rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white">
-          Umów wizytę
+          {say("Umów wizytę")}
         </Link>
         <form action="/api/account/logout" method="post">
           <button type="submit" className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ink ring-1 ring-ink/10">
-            Wyloguj się
+            {say("Wyloguj się")}
           </button>
         </form>
       </div>
-      <h2 className="mt-10 font-display text-3xl">Historia wizyt</h2>
+      <h2 className="mt-10 font-display text-3xl">{say("Historia wizyt")}</h2>
       {rows.length === 0 ? (
-        <p className="mt-4 text-base leading-7 text-ink/80">Jeszcze nie ma wizyt przypisanych do tego konta. Zapis z tym e-mailem pojawi się tutaj.</p>
+        <p className="mt-4 text-base leading-7 text-ink/80">{say("Jeszcze nie ma wizyt przypisanych do tego konta. Zapis z tym e-mailem pojawi się tutaj.")}</p>
       ) : (
         <ul className="mt-4 grid gap-3">
           {rows.map((row) => (
             <li key={row.id} className="rounded-[1.75rem] bg-white p-5 ring-1 ring-pink-100">
-              <p className="font-semibold text-ink">{findPublishedVariant(row.serviceId)?.group.name ?? "Wizyta"}</p>
+              <p className="font-semibold text-ink">{say(findPublishedVariant(row.serviceId)?.group.name ?? "Wizyta")}</p>
               <p className="mt-1 text-sm text-ink/75">
                 {formatWarsawDate(row.startsAt)} · {formatWarsawTime(row.startsAt)}
               </p>
-              <p className="mt-1 text-sm text-mauve">{STATUS[row.status] ?? row.status}</p>
+              <p className="mt-1 text-sm text-mauve">{say(STATUS[row.status] ?? row.status)}</p>
             </li>
           ))}
         </ul>

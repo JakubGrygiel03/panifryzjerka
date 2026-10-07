@@ -4,10 +4,12 @@ import type { ComparisonPair } from "@/lib/cms/showcase-types";
 import type { LengthGuide } from "@/lib/content/length-guide";
 import type { OpeningHour, Review, SalonSettings } from "@/lib/content/types";
 import type { Locale } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 
 export function pick(locale: Locale, pl: string, ru?: string) {
-  if (locale === "RU" && ru?.trim()) return ru.trim();
-  return pl;
+  if (locale !== "RU") return pl;
+  if (ru?.trim()) return ru.trim();
+  return ruPhrase(pl);
 }
 
 export function presentSection(section: HomeSection, locale: Locale): HomeSection {

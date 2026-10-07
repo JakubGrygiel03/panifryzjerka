@@ -7,12 +7,29 @@ import { DeviceToggles } from "@/components/admin/device-toggles";
 import { AdminPageHeader, Field, SaveBar, fieldClass, useSave } from "@/components/admin/editor";
 import { ALL_DEVICES } from "@/lib/cms/devices";
 import { ImageField } from "@/components/admin/media-library";
-import { SECTION_LABELS, type HomeSection } from "@/lib/cms/section-types";
+import { SECTION_LABELS, type HomeSection, type SectionType } from "@/lib/cms/section-types";
+
+const SECTION_LABELS_RU: Record<SectionType, string> = {
+  hero: "Шапка",
+  promo: "Акции",
+  cennik: "Прайс",
+  metamorfozy: "Преображения",
+  zespol: "Команда",
+  zapis: "Как проходит запись",
+  szycie: "Техники",
+  pielegnacja: "До и после процедуры",
+  pytania: "Вопросы",
+  opinie: "Отзывы",
+  dojazd: "Как добраться",
+  tekst: "Свой блок",
+};
 import type { MediaRef } from "@/lib/media/paths";
 import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 
 export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media: MediaRef[] }) {
   const locale = useWritingLocale();
+  const copy = adminCopy(locale);
   const [sections, setSections] = useState(initial);
   const [library, setLibrary] = useState(media);
   const [openId, setOpenId] = useState<string | null>(initial[0]?.id ?? null);
@@ -43,16 +60,16 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
   return (
     <form onSubmit={save.onSubmit}>
       <AdminPageHeader
-        title="Układ strony"
-        text="Przesuń sekcje, ukryj je albo zmień nagłówki i treść. Własną sekcję dodasz na dole. Kolejność na stronie jest taka jak na tej liście."
+        title={copy.layoutTitle}
+        text={copy.layoutText}
       />
       <div className="mb-6 max-w-3xl rounded-[1.75rem] bg-white p-4 ring-1 ring-pink-100">
-        <p className="text-sm font-semibold text-ink">Podgląd strony</p>
+        <p className="text-sm font-semibold text-ink">{locale === "RU" ? "Просмотр сайта" : "Podgląd strony"}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {([
-            ["phone", "Telefon", Smartphone],
+            ["phone", locale === "RU" ? "Телефон" : "Telefon", Smartphone],
             ["tablet", "Tablet", Tablet],
-            ["desktop", "Komputer", Monitor],
+            ["desktop", locale === "RU" ? "Компьютер" : "Komputer", Monitor],
           ] as const).map(([id, label, Icon]) => (
             <button key={id} type="button" onClick={() => setPreview(id)} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${preview === id ? "bg-berry text-white" : "bg-blush text-ink"}`}>
               <Icon size={14} aria-hidden />
@@ -64,6 +81,17 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
           <iframe title="Podgląd strony salonu" src="/" className="h-[32rem] w-full bg-white" />
         </div>
       </div>
+      <button
+        type="button"
+        className="mb-4 inline-flex rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white"
+        onClick={() => {
+          const id = crypto.randomUUID();
+          setSections((current) => [...current, { id, type: "tekst", enabled: true, eyebrow: "", title: "Nowa sekcja", body: "", image: "", devices: { ...ALL_DEVICES } }]);
+          setOpenId(id);
+        }}
+      >
+        {copy.addSection}
+      </button>
       <ul className="grid max-w-3xl gap-3">
         {sections.map((section, index) => {
           const open = openId === section.id;
@@ -72,7 +100,7 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
               <div className="flex items-center gap-2 px-4 py-3">
                 <GripVertical size={16} className="text-mauve" aria-hidden />
                 <button type="button" className="min-w-0 flex-1 text-left text-sm font-semibold" onClick={() => setOpenId(open ? null : section.id)}>
-                  {section.type === "tekst" ? (locale === "RU" ? section.ru?.title || section.title : section.title) || "Własna sekcja" : SECTION_LABELS[section.type]}
+                  {section.type === "tekst" ? (locale === "RU" ? section.ru?.title || section.title : section.title) || (locale === "RU" ? "Свой блок" : "Własna sekcja") : (locale === "RU" ? SECTION_LABELS_RU[section.type] : SECTION_LABELS[section.type])}
                 </button>
                 <button type="button" aria-label="Wyżej" onClick={() => move(index, -1)} className="rounded-full p-1 text-ink hover:bg-blush">
                   <ChevronUp size={16} />
@@ -124,17 +152,6 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
           );
         })}
       </ul>
-      <button
-        type="button"
-        className="mt-4 text-sm font-semibold text-ink"
-        onClick={() => {
-          const id = crypto.randomUUID();
-          setSections((current) => [...current, { id, type: "tekst", enabled: true, eyebrow: "", title: "Nowa sekcja", body: "", image: "", devices: { ...ALL_DEVICES } }]);
-          setOpenId(id);
-        }}
-      >
-        Dodaj sekcję
-      </button>
       <SaveBar pending={save.pending} message={save.message} />
     </form>
   );

@@ -11,6 +11,7 @@ import { ALL_DEVICES } from "@/lib/cms/devices";
 import type { ComparisonPair, HeroSlide } from "@/lib/cms/showcase-types";
 import type { MediaRef } from "@/lib/media/paths";
 import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 
 export function ShowcaseForm({
   hero,
@@ -22,6 +23,7 @@ export function ShowcaseForm({
   media: MediaRef[];
 }) {
   const locale = useWritingLocale();
+  const copy = adminCopy(locale);
   const [slides, setSlides] = useState(hero);
   const [pairs, setPairs] = useState(comparisons);
   const [library, setLibrary] = useState(media);
@@ -63,12 +65,12 @@ export function ShowcaseForm({
   return (
     <form onSubmit={save.onSubmit}>
       <AdminPageHeader
-        title="Pokaz"
-        text="Tu decydujesz, które zdjęcia zmieniają się w wejściu strony i które pary przed/po widać w metamorfozach. Każdy plik jest w bibliotece tylko raz."
+        title={copy.showcaseTitle}
+        text={copy.showcaseText}
       />
 
       <section className="max-w-3xl rounded-[1.75rem] bg-white p-6 ring-1 ring-pink-100">
-        <h2 className="font-display text-3xl text-ink">Wejście strony</h2>
+        <h2 className="font-display text-3xl text-ink">{copy.heroPhotos}</h2>
         <p className="mt-2 text-sm leading-6 text-ink/75">
           Zdjęcia zmieniają się same co kilka sekund. Wybieraj kadry bez napisu na fotografii — hasztagi i podpisy zostaw poza tym miejscem.
         </p>
@@ -99,57 +101,18 @@ export function ShowcaseForm({
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-sm font-medium text-ink">Dodaj zdjęcie do wejścia</p>
+        <p className="mt-4 text-sm font-medium text-ink">{copy.addHeroPhoto}</p>
         <PhotoGrid options={library} disabled={slides.map((slide) => slide.src)} onSelect={addSlide} />
       </section>
 
       <section className="mt-6 max-w-3xl">
-        <h2 className="font-display text-3xl text-ink">Przed i po</h2>
+        <h2 className="font-display text-3xl text-ink">{copy.beforeAfter}</h2>
         <p className="mt-2 text-sm leading-6 text-ink/75">
           Każda para to dwa pliki: stan przed i stan po, plus krótki opis. Lewa strona suwaka pokazuje „przed”, prawa „po”. Ten sam plik po obu stronach zostaje rozcięty na pół.
         </p>
-        <ul className="mt-4 grid gap-4">
-          {pairs.map((pair) => (
-            <li key={pair.id} className="grid gap-3 rounded-[1.75rem] bg-white p-5 ring-1 ring-pink-100">
-              <Field label="Nazwa zabiegu">
-                <input className={fieldClass} value={locale === "RU" ? (pair.ru?.title ?? "") : pair.title} placeholder={locale === "RU" ? pair.title : undefined} onChange={(event) => editPair(pair.id, "title", event.target.value)} />
-              </Field>
-              <Field label="Opis">
-                <textarea className={fieldClass} rows={3} value={locale === "RU" ? (pair.ru?.text ?? "") : pair.text} placeholder={locale === "RU" ? pair.text : undefined} onChange={(event) => editPair(pair.id, "text", event.target.value)} />
-              </Field>
-              <ImageField
-                label="Zdjęcie przed"
-                value={pair.before}
-                options={library}
-                allowEmpty={false}
-                onChange={(src) => patchPair(pair.id, { before: src })}
-                onUploaded={(item) => {
-                  setLibrary((current) => (current.some((row) => row.src === item.src) ? current : [...current, item]));
-                  patchPair(pair.id, { before: item.src });
-                }}
-              />
-              <p className="-mt-2 text-xs font-semibold text-mauve">To zdjęcie jest stanem przed.</p>
-              <ImageField
-                label="Zdjęcie po"
-                value={pair.after}
-                options={library}
-                allowEmpty={false}
-                onChange={(src) => patchPair(pair.id, { after: src })}
-                onUploaded={(item) => {
-                  setLibrary((current) => (current.some((row) => row.src === item.src) ? current : [...current, item]));
-                  patchPair(pair.id, { after: item.src });
-                }}
-              />
-              <p className="-mt-2 text-xs font-semibold text-mauve">To zdjęcie jest stanem po.</p>
-              <button type="button" className="justify-self-start text-sm font-semibold text-berry" onClick={() => setPairs((current) => current.filter((item) => item.id !== pair.id))}>
-                Usuń parę
-              </button>
-            </li>
-          ))}
-        </ul>
         <button
           type="button"
-          className="mt-4 text-sm font-semibold text-ink"
+          className="mt-4 inline-flex rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white"
           onClick={() =>
             setPairs((current) => [
               ...current,
@@ -164,8 +127,47 @@ export function ShowcaseForm({
             ])
           }
         >
-          Dodaj parę przed i po
+          {copy.addPair}
         </button>
+        <ul className="mt-4 grid gap-4">
+          {pairs.map((pair) => (
+            <li key={pair.id} className="grid gap-3 rounded-[1.75rem] bg-white p-5 ring-1 ring-pink-100">
+              <Field label={copy.treatmentName}>
+                <input className={fieldClass} value={locale === "RU" ? (pair.ru?.title ?? "") : pair.title} placeholder={locale === "RU" ? pair.title : undefined} onChange={(event) => editPair(pair.id, "title", event.target.value)} />
+              </Field>
+              <Field label={copy.description}>
+                <textarea className={fieldClass} rows={3} value={locale === "RU" ? (pair.ru?.text ?? "") : pair.text} placeholder={locale === "RU" ? pair.text : undefined} onChange={(event) => editPair(pair.id, "text", event.target.value)} />
+              </Field>
+              <ImageField
+                label={copy.photoBefore}
+                value={pair.before}
+                options={library}
+                allowEmpty={false}
+                onChange={(src) => patchPair(pair.id, { before: src })}
+                onUploaded={(item) => {
+                  setLibrary((current) => (current.some((row) => row.src === item.src) ? current : [...current, item]));
+                  patchPair(pair.id, { before: item.src });
+                }}
+              />
+              <p className="-mt-2 text-xs font-semibold text-mauve">{copy.isBefore}</p>
+              <ImageField
+                label={copy.photoAfter}
+                value={pair.after}
+                options={library}
+                allowEmpty={false}
+                onChange={(src) => patchPair(pair.id, { after: src })}
+                onUploaded={(item) => {
+                  setLibrary((current) => (current.some((row) => row.src === item.src) ? current : [...current, item]));
+                  patchPair(pair.id, { after: item.src });
+                }}
+              />
+              <p className="-mt-2 text-xs font-semibold text-mauve">{copy.isAfter}</p>
+              <button type="button" className="justify-self-start text-sm font-semibold text-berry" onClick={() => setPairs((current) => current.filter((item) => item.id !== pair.id))}>
+                Usuń parę
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <SaveBar pending={save.pending} message={save.message} />

@@ -26,11 +26,11 @@ export default async function BookingLayout({ children }: { children: React.Reac
         phoneDisplay={content.settings.phone}
         phoneHref={tel}
         accountHref={customer ? "/konto" : "/konto/logowanie"}
-        accountLabel={customer ? customer.name : "Konto"}
+        accountLabel={customer ? customer.name : locale === "RU" ? "Аккаунт" : "Konto"}
       />
       <AccountPrefill profile={customer} />
       <main className="pb-24 md:pb-0">{children}</main>
-      <Footer hours={content.settings.openingHours} phoneDisplay={content.settings.phone} phoneHref={tel} rating={content.settings.googleRating} reviewCount={content.settings.googleReviewCount} />
+      <Footer hours={content.settings.openingHours} phoneDisplay={content.settings.phone} phoneHref={tel} rating={content.settings.googleRating} reviewCount={content.settings.googleReviewCount} locale={locale} />
       <MobileBar phoneHref={tel} />
     </>
   );

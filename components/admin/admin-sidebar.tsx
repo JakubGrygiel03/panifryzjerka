@@ -2,33 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Clock, GalleryHorizontal, HelpCircle, ImageIcon, LayoutDashboard, MessageSquareQuote, Rows3, Settings, X } from "lucide-react";
+import { BarChart3, CalendarDays, Clock, GalleryHorizontal, HelpCircle, ImageIcon, LayoutDashboard, ListPlus, Mail, MessageSquareQuote, Rows3, Settings, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const groups = [
-  {
-    label: "Salon",
-    items: [
-      { href: "/admin", label: "Pulpit", icon: LayoutDashboard },
-      { href: "/admin/kalendarz", label: "Terminarz", icon: CalendarDays },
-      { href: "/admin/ustawienia", label: "Ustawienia", icon: Settings },
-      { href: "/admin/uklad", label: "Układ strony", icon: Rows3 },
-      { href: "/admin/zdjecia", label: "Zdjęcia", icon: ImageIcon },
-      { href: "/admin/pokaz", label: "Pokaz", icon: GalleryHorizontal },
-    ],
-  },
-  {
-    label: "Treść strony",
-    items: [
-      { href: "/admin/cennik", label: "Cennik", icon: Clock },
-      { href: "/admin/opinie", label: "Opinie", icon: MessageSquareQuote },
-      { href: "/admin/pytania", label: "Pytania", icon: HelpCircle },
-    ],
-  },
-];
+import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 
 export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
+  const copy = adminCopy(useWritingLocale());
+  const groups = [
+    {
+      label: copy.salon,
+      items: [
+        { href: "/admin", label: copy.dashboard, icon: LayoutDashboard },
+        { href: "/admin/kalendarz", label: copy.calendar, icon: CalendarDays },
+        { href: "/admin/klientki", label: copy.clients, icon: Users },
+        { href: "/admin/rezerwa", label: copy.waitlist, icon: ListPlus },
+        { href: "/admin/ustawienia", label: copy.settings, icon: Settings },
+        { href: "/admin/uklad", label: copy.layout, icon: Rows3 },
+        { href: "/admin/zdjecia", label: copy.photos, icon: ImageIcon },
+        { href: "/admin/pokaz", label: copy.showcase, icon: GalleryHorizontal },
+      ],
+    },
+    {
+      label: copy.content,
+      items: [
+        { href: "/admin/cennik", label: copy.prices, icon: Clock },
+        { href: "/admin/opinie", label: copy.reviews, icon: MessageSquareQuote },
+        { href: "/admin/pytania", label: copy.questions, icon: HelpCircle },
+        { href: "/admin/maile", label: copy.mail, icon: Mail },
+        { href: "/admin/analityka", label: copy.analytics, icon: BarChart3 },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -50,7 +56,7 @@ export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => 
               Pani<span className="text-berry">Fryzjerka</span>
             </p>
           </Link>
-          <button type="button" onClick={onClose} className="rounded-full p-1.5 text-ink/60 hover:bg-blush md:hidden" aria-label="Zamknij menu">
+          <button type="button" onClick={onClose} className="rounded-full p-1.5 text-ink/60 hover:bg-blush md:hidden" aria-label={copy.closeMenu}>
             <X size={16} />
           </button>
         </div>
@@ -84,7 +90,7 @@ export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => 
         </nav>
         <form action="/api/admin/logout" method="post" className="border-t border-pink-100 p-3">
           <button type="submit" className="w-full rounded-full px-3 py-2 text-left text-sm text-mauve hover:bg-blush hover:text-berry">
-            Wyloguj się
+            {copy.logout}
           </button>
         </form>
       </aside>

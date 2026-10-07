@@ -2,6 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCustomer } from "@/lib/account/session";
+import { ruPhrase } from "@/lib/i18n/phrases";
+import { getRequestLocale } from "@/lib/request-locale";
 import { ADMIN_COOKIE, isAdminCookieValue } from "@/lib/cms/session";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +21,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (isAdminCookieValue(store.get(ADMIN_COOKIE)?.value)) redirect("/admin");
   if (await getCustomer()) redirect("/konto");
   const query = await searchParams;
+  const locale = await getRequestLocale();
+  const say = (text: string) => (locale === "RU" ? ruPhrase(text) : text);
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-md items-center px-4 py-12">
@@ -26,24 +30,24 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <p className="font-display text-3xl text-ink">
           Pani<span className="text-berry">Fryzjerka</span>
         </p>
-        <h1 className="mt-3 font-display text-4xl text-ink">Zaloguj się</h1>
-        <p className="mt-3 text-base leading-7 text-ink/80">Zaloguj się, żeby zobaczyć swoje wizyty.</p>
+        <h1 className="mt-3 font-display text-4xl text-ink">{say("Zaloguj się")}</h1>
+        <p className="mt-3 text-base leading-7 text-ink/80">{say("Zaloguj się, żeby zobaczyć swoje wizyty.")}</p>
         <label className="mt-6 block text-sm font-medium">
-          E-mail
+          {say("E-mail")}
           <input name="email" type="email" required defaultValue={query.email ?? ""} autoComplete="email" className="mt-1 w-full rounded-xl border border-ink/10 px-3 py-2 outline-none focus:border-berry" />
         </label>
         <label className="mt-4 block text-sm font-medium">
-          Hasło
+          {say("Hasło")}
           <input name="password" type="password" required autoComplete="current-password" className="mt-1 w-full rounded-xl border border-ink/10 px-3 py-2 outline-none focus:border-berry" />
         </label>
-        {query.blad && ERRORS[query.blad] ? <p className="mt-3 text-sm font-medium text-berry">{ERRORS[query.blad]}</p> : null}
+        {query.blad && ERRORS[query.blad] ? <p className="mt-3 text-sm font-medium text-berry">{say(ERRORS[query.blad])}</p> : null}
         <button type="submit" className="mt-6 w-full rounded-full bg-berry py-3 text-sm font-semibold text-white hover:bg-berry-deep">
-          Zaloguj się
+          {say("Zaloguj się")}
         </button>
         <p className="mt-4 text-center text-sm text-ink">
-          Nie masz konta?{" "}
+          {say("Nie masz konta?")}{" "}
           <Link href="/konto/rejestracja" className="font-semibold text-berry">
-            Zarejestruj się
+            {say("Zarejestruj się")}
           </Link>
         </p>
       </form>

@@ -12,7 +12,7 @@ import { ADMIN_COOKIE, isAdminCookieValue } from "@/lib/cms/session";
 type Result = { ok: true } | { ok: false; error: string };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const HOUR = /^([01]\d|2[0-3]):00$/;
+const SLOT = /^([01]\d|2[0-3]):(00|30)$/;
 
 async function requireAdmin(): Promise<string | null> {
   const jar = await cookies();
@@ -26,12 +26,13 @@ function refresh() {
 }
 
 function hourAllowed(date: string, label: string) {
-  if (!DATE.test(date) || !HOUR.test(label)) return false;
+  if (!DATE.test(date) || !SLOT.test(label)) return false;
   const weekday = dayOfWeekInTimeZone(date, SALON.timezone);
   if (weekday === 0) return false;
-  const hour = Number(label.slice(0, 2));
-  const end = weekday === 6 ? 18 : 20;
-  return hour >= 9 && hour < end;
+  const [hourText, minuteText] = label.split(":");
+  const minutes = Number(hourText) * 60 + Number(minuteText);
+  const end = weekday === 6 ? 18 * 60 : 20 * 60;
+  return minutes >= 9 * 60 && minutes < end;
 }
 
 function overlaps(start: string, end: string, row: { startsAt: string; endsAt: string }) {
@@ -72,7 +73,7 @@ export async function releaseHour(date: string, label: string): Promise<Result> 
   if (!hourAllowed(date, label)) return { ok: false, error: "Nie ma takiej godziny w grafiku." };
 
   const start = zonedLocalToUtc(date, label, SALON.timezone);
-  const end = new Date(start.getTime() + 60 * 60_000);
+  const end = new Date(start.getTime() + 30 * 60_000);
   const dayStart = zonedLocalToUtc(date, "00:00", SALON.timezone);
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
   const blocks = await listTimeOffRows([STAFF.iryna.id], dayStart, dayEnd);

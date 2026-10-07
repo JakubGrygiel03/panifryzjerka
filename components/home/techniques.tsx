@@ -1,6 +1,7 @@
 "use client";
 
 import { useBookingStore } from "@/store/use-booking-store";
+import { useLocaleStore } from "@/store/use-locale-store";
 import type { ServiceGroup } from "@/lib/booking/types";
 
 const TECHNIQUES = [
@@ -30,7 +31,15 @@ const TECHNIQUES = [
   },
 ] as const;
 
+const TECHNIQUES_RU = [
+  { kicker: "Смешение седины", title: "#szycieSiwizny", text: "Седина вплетена в цвет, без резкой линии отроста. Эффект должен выглядеть как ваши волосы, а не как краска из коробки." },
+  { kicker: "Мягкий переход", title: "Эйртач", text: "Светлые пряди без пятен и жёсткой границы. Цвет работает со светом и с тем, как вы носите волосы каждый день." },
+  { kicker: "Свет в волосах", title: "Балаяж и блики", text: "Осветление, нарисованное вручную: светлее у лица и на концах, темнее у кожи. Отрост сходит мягко." },
+  { kicker: "Форма и объём", title: "Афролоконы и дреды", text: "Афролоконы, дреды и корнроу делаются терпеливо, с планом коррекции. Не расплетайте их сами между визитами." },
+];
+
 export function Techniques({ services }: { services: ServiceGroup[] }) {
+  const locale = useLocaleStore((state) => state.locale);
   const openBooking = useBookingStore((state) => state.openBooking);
 
   function book(id: string) {
@@ -42,18 +51,21 @@ export function Techniques({ services }: { services: ServiceGroup[] }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {TECHNIQUES.map((item) => (
+      {TECHNIQUES.map((item, index) => {
+        const copy = locale === "RU" ? TECHNIQUES_RU[index] : item;
+        return (
         <article key={item.id} className="flex flex-col justify-between rounded-[1.75rem] bg-white p-7 ring-1 ring-pink-100">
           <div>
-            <p className="text-sm font-semibold text-berry">{item.kicker}</p>
-            <h3 className="mt-2 font-display text-3xl text-ink">{item.title}</h3>
-            <p className="mt-3 text-base leading-7 text-ink">{item.text}</p>
+            <p className="text-sm font-semibold text-berry">{copy.kicker}</p>
+            <h3 className="mt-2 font-display text-3xl text-ink">{copy.title}</h3>
+            <p className="mt-3 text-base leading-7 text-ink">{copy.text}</p>
           </div>
           <button type="button" onClick={() => book(item.id)} className="mt-6 self-start rounded-full bg-berry px-4 py-2.5 text-sm font-semibold text-white hover:bg-berry-deep">
-            Zarezerwuj tę technikę
+            {locale === "RU" ? "Записаться на эту технику" : "Zarezerwuj tę technikę"}
           </button>
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AdminPageHeader } from "@/components/admin/editor";
+import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 import { UPLOAD_MAX_BYTES, type MediaRef } from "@/lib/media/paths";
 
 function formatBytes(bytes: number) {
@@ -139,7 +141,7 @@ export function ImageField({
       >
         Upuść zdjęcie tutaj albo wgraj plik. Zostanie zmniejszone i zapisane raz.
       </div>
-      <label className="mt-3 inline-flex cursor-pointer rounded-full bg-blush px-4 py-2 text-sm font-semibold text-ink">
+      <label className="mt-3 inline-flex cursor-pointer rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white">
         {pending ? "Zmniejszam…" : "Wgraj nowe"}
         <input
           type="file"
@@ -159,6 +161,7 @@ export function ImageField({
 }
 
 export function MediaLibrary({ initial }: { initial: MediaRef[] }) {
+  const copy = adminCopy(useWritingLocale());
   const [items, setItems] = useState(initial);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -197,8 +200,8 @@ export function MediaLibrary({ initial }: { initial: MediaRef[] }) {
   return (
     <div>
       <AdminPageHeader
-        title="Zdjęcia"
-        text="Wszystkie zdjęcia są w jednym miejscu. Sekcje strony trzymają tylko adres pliku, więc to samo zdjęcie nie zapisuje się drugi raz. Nowe pliki są zmniejszane do 1600 px i WebP."
+        title={copy.photosTitle}
+        text={copy.photosText}
       />
       <p className="text-sm text-ink/75">
         {items.length} plików · {formatBytes(total)} na dysku · wgrane {uploads.length} ({formatBytes(uploadBytes)} z 25 MB)

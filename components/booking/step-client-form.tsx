@@ -74,7 +74,7 @@ export function StepClientForm() {
         <p className="text-sm text-mauve">
           {formatWarsawDate(confirmation.startsAt)} · {formatWarsawTime(confirmation.startsAt)}–{formatWarsawTime(confirmation.endsAt)}
         </p>
-        <p className="text-sm">Gdańsk, ul. Skarpowa 24. Płatność w salonie po zabiegu.</p>
+        <p className="text-sm">{copy.savedAddress}</p>
         <div className="flex flex-wrap gap-2">
           <a href={confirmation.googleCalendarUrl} target="_blank" rel="noopener noreferrer" className="rounded-full bg-berry px-4 py-2 text-sm font-semibold text-white">
             {copy.addGoogle}
@@ -111,17 +111,17 @@ export function StepClientForm() {
       </label>
       <label className="block text-sm">
         {copy.email}
-        <input type="email" autoComplete="email" value={customerEmail} onChange={(event) => setField("customerEmail", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" />
+        <input required type="email" autoComplete="email" value={customerEmail} onChange={(event) => setField("customerEmail", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" />
       </label>
       <label className="block text-sm">
         {copy.note}
-        <textarea value={notes} onChange={(event) => setField("notes", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" rows={3} placeholder="Np. męski czwartek, wcześniejsza farba" />
+        <textarea value={notes} onChange={(event) => setField("notes", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" rows={3} placeholder={copy.notePlaceholder} />
       </label>
       <label className="absolute -left-[9999px] h-0 overflow-hidden" aria-hidden="true">
         Strona
         <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
       </label>
-      <p className="text-xs text-mauve">Płatność w salonie, po zabiegu. Odwołanie zrób telefonicznie najpóźniej poprzedniego dnia.</p>
+      <p className="text-xs text-mauve">{copy.emailNote} {copy.payNote}</p>
       {error ? <p className="text-sm text-berry">{error}</p> : null}
       <button type="submit" disabled={pending} className="w-full rounded-full bg-berry py-3 text-sm font-semibold text-white disabled:opacity-60">
         {pending ? "…" : copy.confirm}

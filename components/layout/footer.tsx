@@ -1,15 +1,7 @@
 import Link from "next/link";
 import { SALON } from "@/lib/brand";
+import { t, type Locale } from "@/lib/i18n";
 import type { OpeningHour } from "@/lib/content/types";
-
-const links = [
-  ["/#faq", "Pytania"],
-  ["/#poradnik", "Przed wizytą"],
-  ["/#techniki", "Techniki"],
-  ["/odwolanie", "Odwołanie"],
-  ["/regulamin", "Regulamin"],
-  ["/prywatnosc", "Prywatność"],
-] as const;
 
 export function Footer({
   hours,
@@ -17,13 +9,24 @@ export function Footer({
   phoneHref,
   rating,
   reviewCount,
+  locale = "PL",
 }: {
   hours: OpeningHour[];
   phoneDisplay: string;
   phoneHref: string;
   rating: number;
   reviewCount: number;
+  locale?: Locale;
 }) {
+  const copy = t(locale);
+  const links = [
+    ["/#faq", copy.linkQuestions],
+    ["/#poradnik", copy.linkPrep],
+    ["/#techniki", copy.linkTechniques],
+    ["/odwolanie", copy.linkCancel],
+    ["/regulamin", copy.linkRules],
+    ["/prywatnosc", copy.linkPrivacy],
+  ] as const;
   return (
     <footer className="mt-20 bg-ink text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-3">
@@ -49,8 +52,8 @@ export function Footer({
           ))}
         </ul>
         <div className="text-sm text-white/65">
-          <p>Parking przy budynku · psy mile widziane · wejście dla wózka</p>
-          <p className="mt-3 text-white">Google {rating.toFixed(1)} · {reviewCount}+ opinii</p>
+          <p>{copy.footerNote}</p>
+          <p className="mt-3 text-white">Google {rating.toFixed(1)} · {reviewCount}+ {copy.footerReviews}</p>
           <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
             {links.map(([href, label]) => (
               <Link key={href} href={href} className="hover:text-white">

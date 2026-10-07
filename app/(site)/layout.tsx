@@ -1,6 +1,7 @@
 import { getCustomer } from "@/lib/account/session";
 import { AccountPrefill } from "@/components/booking/account-prefill";
 import { BookingDrawer } from "@/components/booking/booking-drawer";
+import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { CookieNote } from "@/components/layout/cookie-note";
 import { Footer } from "@/components/layout/footer";
 import { MobileBar } from "@/components/layout/mobile-bar";
@@ -31,13 +32,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         phoneDisplay={content.settings.phone}
         phoneHref={tel}
         accountHref={customer ? "/konto" : "/konto/logowanie"}
-        accountLabel={customer ? customer.name : "Konto"}
+        accountLabel={customer ? customer.name : locale === "RU" ? "Аккаунт" : "Konto"}
       />
       <AccountPrefill profile={customer} />
       <main id="tresc" className="pb-24 md:pb-0">{children}</main>
-      <Footer hours={content.settings.openingHours} phoneDisplay={content.settings.phone} phoneHref={tel} rating={content.settings.googleRating} reviewCount={content.settings.googleReviewCount} />
+      <Footer hours={content.settings.openingHours} phoneDisplay={content.settings.phone} phoneHref={tel} rating={content.settings.googleRating} reviewCount={content.settings.googleReviewCount} locale={locale} />
       <MobileBar phoneHref={tel} />
       <CookieNote />
+      <AnalyticsBeacon />
       <BookingDrawer services={content.services} lengthGuide={presentLengthGuide(getLengthGuide(), locale)} />
     </>
   );

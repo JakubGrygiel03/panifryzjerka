@@ -5,6 +5,8 @@ import { SALON } from "@/lib/brand";
 import { presentSettings } from "@/lib/cms/present";
 import { phoneHref } from "@/lib/cms/store";
 import { getSalonContent } from "@/lib/content/get-salon-content";
+import { t } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 import { getRequestLocale } from "@/lib/request-locale";
 
 export const metadata: Metadata = { title: "Kontakt" };
@@ -17,18 +19,21 @@ const notes = [
 ];
 
 export default async function ContactPage() {
+  const locale = await getRequestLocale();
+  const copy = t(locale);
+  const say = (text: string) => (locale === "RU" ? ruPhrase(text) : text);
   const loaded = await getSalonContent();
-  const content = { ...loaded, settings: presentSettings(loaded.settings, await getRequestLocale()) };
+  const content = { ...loaded, settings: presentSettings(loaded.settings, locale) };
   const map = `https://www.openstreetmap.org/export/embed.html?bbox=18.613%2C54.347%2C18.634%2C54.357&layer=mapnik&marker=${SALON.latitude}%2C${SALON.longitude}`;
   const tel = phoneHref(content.settings.phone);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <Breadcrumbs items={[{ href: "/kontakt", label: "Kontakt" }]} />
-      <p className="eyebrow">Salon</p>
-      <h1 className="mt-3 font-display text-5xl tracking-tight text-ink">Kontakt</h1>
+      <Breadcrumbs items={[{ href: "/kontakt", label: say("Kontakt") }]} />
+      <p className="eyebrow">{say("Salon")}</p>
+      <h1 className="mt-3 font-display text-5xl tracking-tight text-ink">{say("Kontakt")}</h1>
       <p className="mt-4 max-w-xl text-base leading-7 text-ink/80">
-        Zadzwoń, napisz albo umów wizytę online. Salon jest na ul. Skarpowej, z parkingiem przy budynku.
+        {say("Zadzwoń, napisz albo umów wizytę online. Salon jest na ul. Skarpowej, z parkingiem przy budynku.")}
       </p>
 
       <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-[minmax(0,22rem)_1fr]">
@@ -45,7 +50,7 @@ export default async function ContactPage() {
           <div className="mt-6 flex flex-col gap-3">
             <a href={tel} className="inline-flex items-center justify-center gap-2 rounded-full bg-berry px-5 py-3 text-sm font-semibold text-white hover:bg-berry-deep">
               <Phone size={16} aria-hidden />
-              Zadzwoń: {content.settings.phone}
+              {copy.call}: {content.settings.phone}
             </a>
             <a href={`mailto:${SALON.email}`} className="inline-flex items-center justify-center gap-2 rounded-full bg-blush px-5 py-3 text-sm font-semibold text-ink">
               <Mail size={16} className="text-berry" aria-hidden />
@@ -55,7 +60,7 @@ export default async function ContactPage() {
 
           <h2 className="mt-8 flex items-center gap-2 font-display text-2xl text-ink">
             <Clock size={18} className="text-berry" aria-hidden />
-            Godziny
+            {say("Godziny")}
           </h2>
           <dl className="mt-4">
             {content.settings.openingHours.map((row) => (
@@ -68,13 +73,13 @@ export default async function ContactPage() {
 
           <ul className="mt-6 space-y-2 text-sm leading-6 text-ink/80">
             {notes.map((note) => (
-              <li key={note}>{note}</li>
+              <li key={note}>{say(note)}</li>
             ))}
           </ul>
 
           <a href={content.settings.mapsUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full bg-berry px-5 py-3 text-sm font-semibold text-white">
             <MapPin size={18} aria-hidden />
-            Otwórz Google Maps
+            {say("Otwórz Google Maps")}
           </a>
         </div>
 

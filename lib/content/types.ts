@@ -15,6 +15,14 @@ export type SalonSettings = {
   googleRating: number;
   googleReviewCount: number;
   googleReviewsUrl: string;
+  emailClientSubject?: string;
+  emailClientBody?: string;
+  emailSalonSubject?: string;
+  emailSalonBody?: string;
+  emailReminderSubject?: string;
+  emailReminderBody?: string;
+  emailReviewSubject?: string;
+  emailReviewBody?: string;
 };
 
 export type Transformation = {

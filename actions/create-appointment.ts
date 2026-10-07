@@ -9,7 +9,7 @@ import { notifyOwner } from "@/lib/booking/push";
 import {
   buildIcs,
   googleCalendarUrl,
-  sendAppointmentEmail,
+  sendBookingMails,
   sendAppointmentSms,
 } from "@/lib/booking/notifications";
 import { bookingBackend, listPublicSlots, saveAppointment } from "@/lib/booking/repository";
@@ -23,7 +23,7 @@ const schema = z.object({
   startsAt: z.string().datetime(),
   customerName: z.string().trim().min(1).max(120),
   customerPhone: z.string().trim().regex(/^[+0-9][0-9\s-]{4,20}$/, "Podaj numer telefonu."),
-  customerEmail: z.string().trim().email().or(z.literal("")).optional(),
+  customerEmail: z.string().trim().email("Podaj adres e-mail. Na ten adres wyślemy potwierdzenie wizyty."),
   notes: z.string().trim().max(1000).optional(),
   website: z.string().max(200).optional(),
 });
@@ -73,7 +73,7 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
       staffId: parsed.data.staffId,
       customerName: parsed.data.customerName,
       customerPhone: account?.phone && !parsed.data.customerPhone ? account.phone : parsed.data.customerPhone,
-      customerEmail: account?.email || parsed.data.customerEmail || null,
+      customerEmail: parsed.data.customerEmail,
       customerId: account?.id ?? null,
       notes: parsed.data.notes || null,
       startsAt: slot.start,
@@ -97,18 +97,15 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
 
     let emailSent = false;
     let smsSent = false;
-    if (saved.customerEmail) {
-      emailSent = await sendAppointmentEmail({
-        to: saved.customerEmail,
-        customerName: saved.customerName,
-        serviceName: match.group.name,
-        staffName: stylist,
-        startsAt: saved.startsAt,
-        endsAt: saved.endsAt,
-        ics,
-        googleCalendarUrl: calendarUrl,
-      });
-    }
+    emailSent = await sendBookingMails({
+      to: saved.customerEmail ?? "",
+      customerName: saved.customerName,
+      serviceName: match.group.name,
+      startsAt: saved.startsAt,
+      ics,
+    });
+    const { recordEvent } = await import("@/lib/analytics/store");
+    recordEvent({ type: "book", path: "/rezerwacja", label: match.group.name });
     smsSent = await sendAppointmentSms(saved.customerPhone, saved.startsAt);
     const visitDate = new Intl.DateTimeFormat("en-CA", {
       timeZone: SALON.timezone,

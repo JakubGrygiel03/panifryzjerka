@@ -7,11 +7,13 @@ import { StepDateTime } from "@/components/booking/step-date-time";
 import { StepService } from "@/components/booking/step-service";
 import { formatPln } from "@/lib/utils";
 import { t } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 import { useBookingStore } from "@/store/use-booking-store";
 import { useLocaleStore } from "@/store/use-locale-store";
 
 export function BookingFlow({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { services: ServiceGroup[]; lengthGuide?: LengthGuide }) {
-  const copy = t(useLocaleStore((state) => state.locale));
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = t(locale);
   const step = useBookingStore((state) => state.step);
   const setStep = useBookingStore((state) => state.setStep);
   const variantId = useBookingStore((state) => state.variantId);
@@ -47,15 +49,15 @@ export function BookingFlow({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
                 key={item.id}
                 className={`rounded-2xl px-3 py-3 ${item.current ? "bg-berry text-white shadow-sm" : "bg-blush text-ink ring-1 ring-pink-200"}`}
               >
-                <span className={`block text-xs font-semibold ${item.current ? "text-white/80" : "text-berry"}`}>Krok {index + 1}</span>
+                <span className={`block text-xs font-semibold ${item.current ? "text-white/80" : "text-berry"}`}>{copy.step} {index + 1}</span>
                 <span className="mt-1 block font-display text-xl leading-none sm:text-2xl">{item.label}</span>
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-sm text-ink">Termin u Pani Iryny.</p>
+          <p className="mt-3 text-sm text-ink">{copy.withIryna}</p>
           {chosen && chosenVariant && step > 1 ? (
             <p className="mt-3 rounded-2xl bg-blush px-4 py-3 text-sm text-ink">
-              {chosen.name} · {formatPln(chosenVariant.priceCents)} · {chosenVariant.durationMinutes} min
+              {locale === "RU" ? ruPhrase(chosen.name) : chosen.name} · {formatPln(chosenVariant.priceCents)} · {chosenVariant.durationMinutes} {copy.minutes}
             </p>
           ) : null}
         </div>

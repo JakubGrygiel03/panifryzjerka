@@ -7,13 +7,16 @@ import type { ServiceGroup } from "@/lib/booking/types";
 import { DEFAULT_LENGTH_GUIDE, lengthItem, type LengthGuide } from "@/lib/content/length-guide";
 import { formatPln } from "@/lib/utils";
 import { t } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 import { useBookingStore } from "@/store/use-booking-store";
 import { useLocaleStore } from "@/store/use-locale-store";
 
 const ALL = "Wszystkie";
 
 export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { services: ServiceGroup[]; lengthGuide?: LengthGuide }) {
-  const copy = t(useLocaleStore((state) => state.locale));
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = t(locale);
+  const name = (text: string) => (locale === "RU" ? ruPhrase(text) : text);
   const groupId = useBookingStore((state) => state.groupId);
   const variantId = useBookingStore((state) => state.variantId);
   const setGroup = useBookingStore((state) => state.setGroup);
@@ -41,12 +44,12 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <label className="block shrink-0 text-sm">
-        Szukaj usługi
+        {copy.search}
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="mt-1 w-full rounded-full bg-blush px-4 py-2.5 text-sm ring-1 ring-pink-100 outline-none"
-          placeholder="np. szycie, grzywka, afroloki, tonowanie"
+          placeholder={copy.searchHint}
         />
       </label>
       <div className="flex shrink-0 flex-wrap gap-2">
@@ -57,7 +60,7 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
             onClick={() => setCategory(item)}
             className={`rounded-full px-3 py-1.5 text-xs ${item === category ? "bg-ink text-white" : "bg-blush text-ink ring-1 ring-pink-100"}`}
           >
-            {item}
+            {name(item)}
           </button>
         ))}
       </div>
@@ -79,8 +82,8 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
                 }}
                 className="block w-full px-4 py-3 text-left text-sm"
               >
-                <span className="block font-semibold">{service.name}</span>
-                <span className={`block text-xs ${selected ? "text-white/80" : "text-mauve"}`}>{service.category}</span>
+                <span className="block font-semibold">{name(service.name)}</span>
+                <span className={`block text-xs ${selected ? "text-white/80" : "text-mauve"}`}>{name(service.category)}</span>
               </button>
               {selected && hasLengths ? (
                 <div className="px-3 pb-3">
@@ -91,7 +94,7 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
                     className="flex w-full items-center justify-between gap-3 rounded-xl bg-white/15 px-3 py-2 text-left text-sm text-white"
                   >
                     <span>
-                      <span className="block text-xs text-white/75">{lengthsOpen ? "Zwiń długość" : "Pokaż długość"}</span>
+                      <span className="block text-xs text-white/75">{lengthsOpen ? copy.hideLength : copy.showLength}</span>
                       <span className="font-semibold">{pickedGuide ? `${pickedGuide.title} · ${pickedGuide.mark}` : copy.length}</span>
                     </span>
                     <ChevronDown size={18} className={`shrink-0 transition-transform duration-300 ${lengthsOpen ? "rotate-180" : ""}`} />
@@ -126,7 +129,7 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
             </div>
           );
         })}
-        {visible.length === 0 ? <p className="text-sm text-ink">Nie ma takiej usługi.</p> : null}
+        {visible.length === 0 ? <p className="text-sm text-ink">{copy.noService}</p> : null}
       </div>
     </div>
   );

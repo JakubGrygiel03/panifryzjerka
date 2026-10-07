@@ -1,7 +1,8 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { SALON } from "@/lib/brand";
-import { DEFAULT_WORKING_HOURS, staffName } from "@/lib/booking/catalog";
+import { staffName } from "@/lib/booking/catalog";
+import { cmsWorkingHours } from "@/lib/booking/opening";
 import { findPublishedVariant } from "@/lib/cms/store";
 import { calculateGrid, zonedLocalToUtc } from "@/lib/booking/slot-calculator";
 import { listTimeOffRows } from "@/lib/booking/time-offs";
@@ -117,8 +118,9 @@ async function loadTimeOffs(staffIds: string[], dayStart: Date, dayEnd: Date) {
 }
 
 async function loadWorkingHours(staffIds: string[]) {
+  const fromCms = cmsWorkingHours();
   if (bookingBackend() !== "supabase") {
-    return new Map(staffIds.map((staffId) => [staffId, DEFAULT_WORKING_HOURS]));
+    return new Map(staffIds.map((staffId) => [staffId, fromCms]));
   }
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -138,7 +140,7 @@ async function loadWorkingHours(staffIds: string[]) {
     grouped.set(row.staff_id, list);
   }
   for (const staffId of staffIds) {
-    if (!grouped.has(staffId)) grouped.set(staffId, DEFAULT_WORKING_HOURS);
+    grouped.set(staffId, fromCms);
   }
   return grouped;
 }
@@ -160,7 +162,7 @@ export async function buildSlotInput(date: string, variantId: string, staffId: s
 
   const staff: StaffDayInput[] = staffIds.map((id) => ({
     staffId: id,
-    workingHours: hours.get(id) ?? DEFAULT_WORKING_HOURS,
+    workingHours: hours.get(id) ?? cmsWorkingHours(),
     timeOffs: timeOffs.get(id) ?? [],
     appointments: appointments
       .filter((row) => row.staffId === id && row.status !== "cancelled")
@@ -315,7 +317,7 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
 
 export async function listStaffWorkingHours(staffId: string) {
   const hours = await loadWorkingHours([staffId]);
-  return hours.get(staffId) ?? DEFAULT_WORKING_HOURS;
+  return hours.get(staffId) ?? cmsWorkingHours();
 }
 
 export async function listAppointmentsBetween(start: Date, end: Date) {

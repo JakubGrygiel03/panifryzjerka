@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
+import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
 
 export function AdminPageHeader({ title, text }: { title: string; text: string }) {
   return (
@@ -12,13 +14,17 @@ export function AdminPageHeader({ title, text }: { title: string; text: string }
 }
 
 export function SaveBar({ pending, message }: { pending: boolean; message: string }) {
+  const copy = adminCopy(useWritingLocale());
   return (
-    <div className="mt-6 flex items-center gap-4">
-      <button type="submit" disabled={pending} className="rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white hover:bg-berry-deep disabled:opacity-60">
-        {pending ? "Zapisuję…" : "Zapisz"}
-      </button>
-      {message ? <p className="text-sm text-ink">{message}</p> : null}
-    </div>
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-4 border-t border-pink-100 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_-24px_rgba(31,26,36,0.8)] backdrop-blur md:left-[260px] md:px-8">
+        <button type="submit" disabled={pending} className="rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white hover:bg-berry-deep disabled:opacity-60">
+          {pending ? copy.saving : copy.save}
+        </button>
+        {message ? <p className="text-sm text-ink">{message}</p> : null}
+      </div>
+      <div className="h-16" aria-hidden />
+    </>
   );
 }
 

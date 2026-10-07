@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WaitlistForm } from "@/components/booking/waitlist-form";
 import { findVariant } from "@/lib/booking/catalog";
 import type { PublicSlot } from "@/lib/booking/types";
 import { addDays, formatWarsawTime, warsawToday } from "@/lib/utils";
@@ -136,6 +137,9 @@ export function StepDateTime() {
       {loading ? <p className="mt-3 text-sm text-mauve">{locale === "RU" ? "Ищу время…" : "Szukam godzin…"}</p> : null}
       {error ? <p className="mt-3 text-sm text-berry">{error}</p> : null}
       {!loading && !closed && slots.length === 0 ? <p className="mt-3 text-sm text-mauve">{copy.noSlots}</p> : null}
+      {!loading && !closed && !slots.some((slot) => slot.available) ? (
+        <WaitlistForm date={activeDate} serviceName={findVariant(variantId ?? "")?.group.name ?? copy.book} />
+      ) : null}
       <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 [scrollbar-width:thin]">
         {periods.map((period) => (
           <section key={period.id}>

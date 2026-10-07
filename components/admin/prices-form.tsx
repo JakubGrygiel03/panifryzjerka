@@ -3,12 +3,18 @@
 import { useMemo, useState } from "react";
 import { savePrices } from "@/actions/cms-admin";
 import { AdminPageHeader, SaveBar, useSave } from "@/components/admin/editor";
+import { useWritingLocale } from "@/components/admin/writing-locale";
+import { adminCopy } from "@/lib/i18n/admin";
+import { ruPhrase } from "@/lib/i18n/phrases";
 import type { ServiceGroup } from "@/lib/booking/types";
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-pink-200 bg-white px-3 py-2.5 text-base font-semibold text-ink outline-none focus:border-berry";
 
 export function PricesForm({ services }: { services: ServiceGroup[] }) {
+  const locale = useWritingLocale();
+  const copy = adminCopy(locale);
+  const label = (text: string) => (locale === "RU" ? ruPhrase(text) : text);
   const [rows, setRows] = useState(services);
   const [query, setQuery] = useState("");
   const save = useSave(() => {
@@ -60,9 +66,9 @@ export function PricesForm({ services }: { services: ServiceGroup[] }) {
 
   return (
     <form onSubmit={save.onSubmit}>
-      <AdminPageHeader title="Cennik" text="Cena i czas zabiegu. Rezerwacja liczy wolne godziny z tego czasu, a cennik na stronie pokazuje tę cenę." />
+      <AdminPageHeader title={copy.pricesTitle} text={copy.pricesText} />
       <label className="mb-4 block text-sm font-medium text-ink">
-        Szukaj usługi
+        {copy.searchService}
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -74,16 +80,16 @@ export function PricesForm({ services }: { services: ServiceGroup[] }) {
         {visible.map(({ group, groupIndex }) => (
           <section key={group.id} className="overflow-hidden rounded-3xl bg-white ring-1 ring-pink-100">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-pink-100 bg-blush px-5 py-4">
-              <h2 className="font-display text-2xl text-ink">{group.name}</h2>
-              <p className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-berry ring-1 ring-pink-100">{group.category}</p>
+              <h2 className="font-display text-2xl text-ink">{label(group.name)}</h2>
+              <p className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-berry ring-1 ring-pink-100">{label(group.category)}</p>
             </div>
             <div className="grid gap-3 p-3">
               {group.variants.map((variant, variantIndex) => (
                 <div key={variant.id} className="rounded-2xl bg-blush p-3 ring-1 ring-pink-100">
-                  <p className="text-sm font-semibold text-ink">{variant.label}</p>
+                  <p className="text-sm font-semibold text-ink">{label(variant.label)}</p>
                   <div className="mt-2 grid grid-cols-2 gap-3">
                     <label className="text-xs font-semibold text-ink">
-                      Cena zł
+                      {copy.price}
                       <input
                         aria-label={`${group.name}, ${variant.label}, cena w złotych`}
                         className={inputClass}
@@ -93,7 +99,7 @@ export function PricesForm({ services }: { services: ServiceGroup[] }) {
                       />
                     </label>
                     <label className="text-xs font-semibold text-ink">
-                      Minuty
+                      {copy.minutes}
                       <input
                         aria-label={`${group.name}, ${variant.label}, minuty`}
                         className={inputClass}
@@ -108,7 +114,7 @@ export function PricesForm({ services }: { services: ServiceGroup[] }) {
             </div>
           </section>
         ))}
-        {visible.length === 0 ? <p className="rounded-2xl bg-white p-5 text-sm text-ink ring-1 ring-pink-100">Nie ma takiej usługi.</p> : null}
+        {visible.length === 0 ? <p className="rounded-2xl bg-white p-5 text-sm text-ink ring-1 ring-pink-100">{copy.noService}</p> : null}
       </div>
       <SaveBar pending={save.pending} message={save.message} />
     </form>

@@ -15,6 +15,7 @@ import type { HomeSection } from "@/lib/cms/section-types";
 import { presentComparison, presentFaq, presentLengthGuide, presentReview, presentSection } from "@/lib/cms/present";
 import { getFaqItems, getLengthGuide, phoneHref } from "@/lib/cms/store";
 import type { Locale } from "@/lib/i18n";
+import { ruPhrase } from "@/lib/i18n/phrases";
 import { salonGallery } from "@/lib/content/gallery";
 import { AFTERCARE, PREP } from "@/lib/content/guides";
 import type { SalonContent } from "@/lib/content/types";
@@ -39,7 +40,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
   const faq = getFaqItems().map((item) => presentFaq(item, locale));
   const lengthGuide = presentLengthGuide(getLengthGuide(), locale);
   const comparisons = getComparisons().map((item) => presentComparison(item, locale));
-  const reviews = content.reviews.map((review) => presentReview(review, locale));
+  const reviews = content.reviews.map((review) => presentReview(review, locale)).filter((review) => review.name.trim() && review.text.trim());
   let band = 0;
 
   return (
@@ -47,6 +48,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
       {shown.filter((section) => section.enabled).map((section) => {
         const tone: "paper" | "blush" = section.type === "hero" ? "blush" : (++band % 2 === 0 ? "paper" : "blush");
         const devices = deviceToken(section.devices);
+        if (section.type === "tekst" && !section.title.trim() && !section.body.trim()) return null;
         if (section.type === "hero") {
           return (
             <div key={section.id} data-devices={deviceToken(section.devices)}>
@@ -107,7 +109,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
               {section.eyebrow ? <p className="eyebrow">{section.eyebrow}</p> : null}
               <h2 className="mt-3 max-w-xl font-display text-4xl tracking-tight sm:text-5xl">{section.title}</h2>
               <div className="mt-8">
-                <Team members={content.team} />
+                <Team members={content.team} locale={locale} />
               </div>
             </section>
             </Band>
@@ -120,11 +122,18 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
               {section.eyebrow ? <p className="eyebrow">{section.eyebrow}</p> : null}
               <h2 className="mt-2 font-display text-4xl text-ink sm:text-5xl">{section.title}</h2>
               <ol className="mt-8 grid gap-px overflow-hidden rounded-[1.75rem] bg-ink/8 md:grid-cols-3">
-                {[
-                  ["01", "Usługa", "Wybierasz zabieg i długość włosów. Od tego zależy cena i czas."],
-                  ["02", "Godzina", "Wybierasz wolną godzinę u Pani Iryny."],
-                  ["03", "Telefon", "Podajesz imię i numer. Konto nie jest potrzebne."],
-                ].map(([n, title, text]) => (
+                {(locale === "RU"
+                  ? [
+                      ["01", "Услуга", "Выбираете процедуру и длину волос. От этого зависят цена и время."],
+                      ["02", "Час", "Выбираете свободный час у пани Ирины."],
+                      ["03", "Телефон", "Оставляете имя и номер. Аккаунт не нужен."],
+                    ]
+                  : [
+                      ["01", "Usługa", "Wybierasz zabieg i długość włosów. Od tego zależy cena i czas."],
+                      ["02", "Godzina", "Wybierasz wolną godzinę u Pani Iryny."],
+                      ["03", "Telefon", "Podajesz imię i numer. Konto nie jest potrzebne."],
+                    ]
+                ).map(([n, title, text]) => (
                   <li key={n} className="bg-white p-7">
                     <p className="text-base font-semibold text-ink">{n}</p>
                     <h3 className="mt-3 font-display text-2xl text-ink">{title}</h3>
@@ -156,7 +165,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
               <h2 className="font-display text-4xl tracking-tight text-ink sm:text-5xl">{section.title || "Przed wizytą i po zabiegu"}</h2>
               <div className="mt-8 grid gap-6 md:grid-cols-2">
               <article className="rounded-[1.75rem] bg-white p-8 ring-1 ring-ink/10">
-                <h3 className="font-display text-3xl text-ink">Przed wizytą</h3>
+                <h3 className="font-display text-3xl text-ink">{locale === "RU" ? "Перед визитом" : "Przed wizytą"}</h3>
                 <ul className="mt-5 space-y-4">
                   {PREP.map((item, index) => {
                     const Icon = PREP_ICONS[index] ?? Sparkles;
@@ -164,7 +173,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                       <li key={item.title} className="flex gap-3 text-base leading-7 text-ink">
                         <Icon size={18} className="mt-1 shrink-0 text-berry" aria-hidden />
                         <p>
-                          <span className="font-semibold">{item.title}.</span> {item.text}
+                          <span className="font-semibold">{locale === "RU" ? ruPhrase(item.title) : item.title}.</span> {locale === "RU" ? ruPhrase(item.text) : item.text}
                         </p>
                       </li>
                     );
@@ -172,7 +181,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                 </ul>
               </article>
               <article className="rounded-[1.75rem] bg-white p-8 ring-1 ring-ink/10">
-                <h3 className="font-display text-3xl text-ink">Po zabiegu</h3>
+                <h3 className="font-display text-3xl text-ink">{locale === "RU" ? "После процедуры" : "Po zabiegu"}</h3>
                 <ul className="mt-5 space-y-4">
                   {AFTERCARE.map((item, index) => {
                     const Icon = CARE_ICONS[index] ?? Sparkles;
@@ -180,7 +189,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                       <li key={item.title} className="flex gap-3 text-base leading-7 text-ink">
                         <Icon size={18} className="mt-1 shrink-0 text-berry" aria-hidden />
                         <p>
-                          <span className="font-semibold">{item.title}.</span> {item.text}
+                          <span className="font-semibold">{locale === "RU" ? ruPhrase(item.title) : item.title}.</span> {locale === "RU" ? ruPhrase(item.text) : item.text}
                         </p>
                       </li>
                     );
@@ -222,13 +231,13 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                     <footer className="mt-5 text-sm text-mauve">
                       {review.name}
                       <span className="text-ink"> · {review.service}</span>
-                      <span className="mt-1 block text-xs text-ink">Zweryfikowana opinia z Google Maps</span>
+                      <span className="mt-1 block text-xs text-ink">{locale === "RU" ? "Подтверждённый отзыв из Google Maps" : "Zweryfikowana opinia z Google Maps"}</span>
                     </footer>
                   </blockquote>
                 ))}
               </div>
               <a href={content.settings.googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="mx-auto mt-8 flex w-fit items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white">
-                Wszystkie {content.settings.googleReviewCount}+ opinii w Google Maps
+                {locale === "RU" ? `Все ${content.settings.googleReviewCount}+ отзывов в Google Maps` : `Wszystkie ${content.settings.googleReviewCount}+ opinii w Google Maps`}
               </a>
             </section>
             </Band>
@@ -258,7 +267,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                     <span className="flex size-11 items-center justify-center justify-self-end rounded-full bg-blush">
                       <MapPin size={22} className="text-berry" aria-hidden />
                     </span>
-                    <span className="text-center font-display text-3xl leading-none">Otwórz</span>
+                    <span className="text-center font-display text-3xl leading-none">{locale === "RU" ? "Открыть" : "Otwórz"}</span>
                     <span className="size-11" aria-hidden />
                     <span className="col-span-3 text-center font-display text-3xl leading-none">Google Maps</span>
                   </span>
