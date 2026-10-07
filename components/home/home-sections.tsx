@@ -221,7 +221,7 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
                   </blockquote>
                 ))}
               </div>
-              <a href={content.settings.googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white">
+              <a href={content.settings.googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="mx-auto mt-8 flex w-fit items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white">
                 Wszystkie {content.settings.googleReviewCount}+ opinii w Google Maps
               </a>
             </section>
@@ -232,8 +232,8 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
           return (
             <Band key={section.id} tone={tone} devices={devices}>
             <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-              <div className="flex flex-col justify-between gap-6 rounded-[1.75rem] bg-ink px-8 py-10 text-white sm:flex-row sm:items-end">
-                <div>
+              <div className="flex flex-col gap-6 rounded-[1.75rem] bg-ink p-6 text-white sm:flex-row sm:items-stretch sm:p-8">
+                <div className="min-w-0 flex-1">
                   <p className="text-base font-semibold text-white">{section.eyebrow}</p>
                   <h2 className="mt-3 font-display text-4xl">
                     {section.title || SALON.street}
@@ -246,9 +246,9 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
                   href={SALON.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink sm:self-end"
+                  className="flex min-h-32 w-full items-center justify-center gap-2 rounded-[1.4rem] bg-white px-6 text-base font-semibold text-ink sm:w-64"
                 >
-                  <MapPin size={18} className="text-berry" aria-hidden />
+                  <MapPin size={20} className="text-berry" aria-hidden />
                   Otwórz Google Maps
                 </a>
               </div>
