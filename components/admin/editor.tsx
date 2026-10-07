@@ -22,7 +22,7 @@ export function SaveBar({ pending, message }: { pending: boolean; message: strin
   );
 }
 
-export function useSave(action: () => Promise<void>) {
+export function useSave(action: () => Promise<void | string>) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -31,8 +31,8 @@ export function useSave(action: () => Promise<void>) {
     setPending(true);
     setMessage("");
     try {
-      await action();
-      setMessage("Zapisane. Strona pokazuje tę wersję.");
+      const note = await action();
+      setMessage(note || "Zapisane. Strona pokazuje tę wersję.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nie udało się zapisać.");
     } finally {

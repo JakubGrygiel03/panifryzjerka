@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { SALON } from "@/lib/brand";
+import { presentSettings } from "@/lib/cms/present";
 import { phoneHref } from "@/lib/cms/store";
 import { getSalonContent } from "@/lib/content/get-salon-content";
+import { getRequestLocale } from "@/lib/request-locale";
 
 export const metadata: Metadata = { title: "Kontakt" };
 
@@ -15,7 +17,8 @@ const notes = [
 ];
 
 export default async function ContactPage() {
-  const content = await getSalonContent();
+  const loaded = await getSalonContent();
+  const content = { ...loaded, settings: presentSettings(loaded.settings, await getRequestLocale()) };
   const map = `https://www.openstreetmap.org/export/embed.html?bbox=18.613%2C54.347%2C18.634%2C54.357&layer=mapnik&marker=${SALON.latitude}%2C${SALON.longitude}`;
   const tel = phoneHref(content.settings.phone);
 

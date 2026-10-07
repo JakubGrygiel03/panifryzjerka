@@ -17,6 +17,8 @@ export type SectionType = (typeof SECTION_TYPES)[number];
 
 import type { DeviceVisibility } from "@/lib/cms/devices";
 
+export type SectionCopy = { eyebrow: string; title: string; body: string };
+
 export type HomeSection = {
   id: string;
   type: SectionType;
@@ -26,6 +28,7 @@ export type HomeSection = {
   body: string;
   image: string;
   devices?: DeviceVisibility;
+  ru?: SectionCopy;
 };
 
 export const SECTION_LABELS: Record<SectionType, string> = {

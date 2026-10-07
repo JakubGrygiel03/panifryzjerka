@@ -1,6 +1,18 @@
+import { normalizeDevices } from "@/lib/cms/devices";
 import { defaultSections, SECTION_TYPES, type HomeSection } from "@/lib/cms/section-types";
 import { readCms } from "@/lib/cms/store";
 import { isSalonImagePath } from "@/lib/media/paths";
+
+function cleanCopy(value: unknown): HomeSection["ru"] {
+  if (!value || typeof value !== "object") return undefined;
+  const row = value as { eyebrow?: unknown; title?: unknown; body?: unknown };
+  const copy = {
+    eyebrow: String(row.eyebrow ?? "").slice(0, 80),
+    title: String(row.title ?? "").slice(0, 160),
+    body: String(row.body ?? "").slice(0, 2000),
+  };
+  return copy.eyebrow || copy.title || copy.body ? copy : undefined;
+}
 
 function cleanSection(value: unknown): HomeSection | null {
   if (!value || typeof value !== "object") return null;
@@ -14,6 +26,8 @@ function cleanSection(value: unknown): HomeSection | null {
     title: String(row.title ?? "").slice(0, 160),
     body: String(row.body ?? "").slice(0, 2000),
     image: isSalonImagePath(String(row.image ?? "")) ? String(row.image) : "",
+    ru: cleanCopy(row.ru),
+    devices: normalizeDevices(row.devices),
   };
 }
 

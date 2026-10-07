@@ -17,20 +17,24 @@ export function getHeroSlides(): HeroSlide[] {
 export function getComparisons(): ComparisonPair[] {
   const saved = readCms().comparisons;
   if (!saved) return DEFAULT_COMPARISONS;
-  return saved
-    .map((item) => {
-      const before = String(item.before ?? "");
-      const after = String(item.after ?? "");
-      if (!isSalonImagePath(before) || !isSalonImagePath(after)) return null;
-      return {
-        id: String(item.id).slice(0, 80),
-        title: String(item.title ?? "").slice(0, 80),
-        text: String(item.text ?? "").slice(0, 400),
-        before,
-        after,
-        beforeSide: side(item.beforeSide),
-      };
-    })
-    .filter((item): item is ComparisonPair => Boolean(item?.id && item.title))
-    .slice(0, 12);
+  const rows: ComparisonPair[] = [];
+  for (const item of saved) {
+    const before = String(item.before ?? "");
+    const after = String(item.after ?? "");
+    const id = String(item.id ?? "").slice(0, 80);
+    const title = String(item.title ?? "").slice(0, 80);
+    if (!id || !title || !isSalonImagePath(before) || !isSalonImagePath(after)) continue;
+    const titleRu = String(item.ru?.title ?? "").slice(0, 80);
+    const textRu = String(item.ru?.text ?? "").slice(0, 400);
+    rows.push({
+      id,
+      title,
+      text: String(item.text ?? "").slice(0, 400),
+      before,
+      after,
+      beforeSide: side(item.beforeSide),
+      ru: titleRu || textRu ? { title: titleRu, text: textRu } : undefined,
+    });
+  }
+  return rows.slice(0, 12);
 }

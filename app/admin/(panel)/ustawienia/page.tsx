@@ -7,6 +7,7 @@ export default async function SettingsPage() {
     <SettingsForm
       phone={settings.phone}
       noticeText={settings.noticeText}
+      noticeTextRu={settings.noticeTextRu}
       noticeEnabled={settings.noticeEnabled}
       googleRating={settings.googleRating}
       googleReviewCount={settings.googleReviewCount}

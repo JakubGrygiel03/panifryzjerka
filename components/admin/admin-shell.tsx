@@ -1,14 +1,20 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { useCmsLocaleStore } from "@/store/use-cms-locale-store";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const isLogin = pathname === "/admin/logowanie";
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("pf-cms-locale");
+    if (saved === "RU" || saved === "PL") useCmsLocaleStore.setState({ locale: saved });
+  }, []);
 
   if (isLogin) return <div className="min-h-screen bg-blush">{children}</div>;
 

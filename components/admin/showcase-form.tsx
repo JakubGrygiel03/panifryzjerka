@@ -10,6 +10,7 @@ import { ImageField, PhotoGrid } from "@/components/admin/media-library";
 import { ALL_DEVICES } from "@/lib/cms/devices";
 import type { ComparisonPair, HeroSlide } from "@/lib/cms/showcase-types";
 import type { MediaRef } from "@/lib/media/paths";
+import { useWritingLocale } from "@/components/admin/writing-locale";
 
 export function ShowcaseForm({
   hero,
@@ -20,6 +21,7 @@ export function ShowcaseForm({
   comparisons: ComparisonPair[];
   media: MediaRef[];
 }) {
+  const locale = useWritingLocale();
   const [slides, setSlides] = useState(hero);
   const [pairs, setPairs] = useState(comparisons);
   const [library, setLibrary] = useState(media);
@@ -28,7 +30,7 @@ export function ShowcaseForm({
       heroSlides: slides.map((slide) => slide.src),
       heroDevices: Object.fromEntries(slides.map((slide) => [slide.src, slide.devices])),
       comparisons: pairs,
-    }),
+    }, locale),
   );
   const fallback = library[0]?.src ?? "/salon/biz-11.jpg";
 
@@ -48,6 +50,14 @@ export function ShowcaseForm({
 
   function patchPair(id: string, change: Partial<ComparisonPair>) {
     setPairs((current) => current.map((item) => (item.id === id ? { ...item, ...change } : item)));
+  }
+
+  function editPair(id: string, key: "title" | "text", value: string) {
+    setPairs((current) => current.map((item) => {
+      if (item.id !== id) return item;
+      if (locale !== "RU") return { ...item, [key]: value };
+      return { ...item, ru: { title: item.ru?.title ?? "", text: item.ru?.text ?? "", [key]: value } };
+    }));
   }
 
   return (
@@ -102,10 +112,10 @@ export function ShowcaseForm({
           {pairs.map((pair) => (
             <li key={pair.id} className="grid gap-3 rounded-[1.75rem] bg-white p-5 ring-1 ring-pink-100">
               <Field label="Nazwa zabiegu">
-                <input className={fieldClass} value={pair.title} onChange={(event) => patchPair(pair.id, { title: event.target.value })} />
+                <input className={fieldClass} value={locale === "RU" ? (pair.ru?.title ?? "") : pair.title} placeholder={locale === "RU" ? pair.title : undefined} onChange={(event) => editPair(pair.id, "title", event.target.value)} />
               </Field>
               <Field label="Opis">
-                <textarea className={fieldClass} rows={3} value={pair.text} onChange={(event) => patchPair(pair.id, { text: event.target.value })} />
+                <textarea className={fieldClass} rows={3} value={locale === "RU" ? (pair.ru?.text ?? "") : pair.text} placeholder={locale === "RU" ? pair.text : undefined} onChange={(event) => editPair(pair.id, "text", event.target.value)} />
               </Field>
               <ImageField
                 label="Zdjęcie przed"

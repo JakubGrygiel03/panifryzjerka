@@ -10,6 +10,7 @@ export type LengthGuideItem = {
 export type LengthGuide = {
   note: string;
   items: LengthGuideItem[];
+  ru?: { note: string; items: LengthGuideItem[] };
 };
 
 export const LENGTH_ORDER: HairLength[] = ["short", "medium", "long", "very_long"];

@@ -2,12 +2,14 @@
 
 import { saveSettings } from "@/actions/cms-admin";
 import { AdminPageHeader, Field, SaveBar, fieldClass, useSave } from "@/components/admin/editor";
+import { useWritingLocale } from "@/components/admin/writing-locale";
 import type { OpeningHour } from "@/lib/content/types";
 import { useState } from "react";
 
 type SettingsFormProps = {
   phone: string;
   noticeText: string;
+  noticeTextRu?: string;
   noticeEnabled: boolean;
   googleRating: number;
   googleReviewCount: number;
@@ -15,8 +17,10 @@ type SettingsFormProps = {
 };
 
 export function SettingsForm(props: SettingsFormProps) {
+  const locale = useWritingLocale();
   const [phone, setPhone] = useState(props.phone);
   const [noticeText, setNoticeText] = useState(props.noticeText);
+  const [noticeTextRu, setNoticeTextRu] = useState(props.noticeTextRu ?? "");
   const [noticeEnabled, setNoticeEnabled] = useState(props.noticeEnabled);
   const [googleRating, setGoogleRating] = useState(String(props.googleRating));
   const [googleReviewCount, setGoogleReviewCount] = useState(String(props.googleReviewCount));
@@ -25,11 +29,12 @@ export function SettingsForm(props: SettingsFormProps) {
     saveSettings({
       phone,
       noticeText,
+      noticeTextRu,
       noticeEnabled,
       googleRating: Number(googleRating),
       googleReviewCount: Number(googleReviewCount),
       openingHours,
-    }),
+    }, locale),
   );
 
   return (
@@ -44,7 +49,12 @@ export function SettingsForm(props: SettingsFormProps) {
           Pokaż pasek ogłoszenia
         </label>
         <Field label="Treść paska, na przykład urlop">
-          <input className={fieldClass} value={noticeText} onChange={(event) => setNoticeText(event.target.value)} placeholder="Przerwa urlopowa 10–18.08" />
+          <input
+            className={fieldClass}
+            value={locale === "RU" ? noticeTextRu : noticeText}
+            placeholder={locale === "RU" ? noticeText || "Przerwa urlopowa 10–18.08" : "Przerwa urlopowa 10–18.08"}
+            onChange={(event) => (locale === "RU" ? setNoticeTextRu(event.target.value) : setNoticeText(event.target.value))}
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Ocena Google">
@@ -57,19 +67,21 @@ export function SettingsForm(props: SettingsFormProps) {
         <div className="grid gap-3">
           <p className="text-sm font-medium">Godziny</p>
           {openingHours.map((row, index) => (
-            <div key={row.day} className="grid gap-2 sm:grid-cols-2">
+            <div key={`${row.day}-${index}`} className="grid gap-2 sm:grid-cols-2">
               <input
                 className={fieldClass}
-                value={row.day}
+                value={locale === "RU" ? (row.dayRu ?? "") : row.day}
+                placeholder={locale === "RU" ? row.day : undefined}
                 onChange={(event) =>
-                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, day: event.target.value } : item)))
+                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, [locale === "RU" ? "dayRu" : "day"]: event.target.value } : item)))
                 }
               />
               <input
                 className={fieldClass}
-                value={row.hours}
+                value={locale === "RU" ? (row.hoursRu ?? "") : row.hours}
+                placeholder={locale === "RU" ? row.hours : undefined}
                 onChange={(event) =>
-                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, hours: event.target.value } : item)))
+                  setOpeningHours((hours) => hours.map((item, itemIndex) => (itemIndex === index ? { ...item, [locale === "RU" ? "hoursRu" : "hours"]: event.target.value } : item)))
                 }
               />
             </div>

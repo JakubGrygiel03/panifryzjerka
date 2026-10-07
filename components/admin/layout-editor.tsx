@@ -9,13 +9,23 @@ import { ALL_DEVICES } from "@/lib/cms/devices";
 import { ImageField } from "@/components/admin/media-library";
 import { SECTION_LABELS, type HomeSection } from "@/lib/cms/section-types";
 import type { MediaRef } from "@/lib/media/paths";
+import { useWritingLocale } from "@/components/admin/writing-locale";
 
 export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media: MediaRef[] }) {
+  const locale = useWritingLocale();
   const [sections, setSections] = useState(initial);
   const [library, setLibrary] = useState(media);
   const [openId, setOpenId] = useState<string | null>(initial[0]?.id ?? null);
   const [preview, setPreview] = useState<"phone" | "tablet" | "desktop">("desktop");
-  const save = useSave(() => saveSections(sections));
+  const save = useSave(() => saveSections(sections, locale));
+
+  function editCopy(id: string, key: "eyebrow" | "title" | "body", value: string) {
+    setSections((current) => current.map((item) => {
+      if (item.id !== id) return item;
+      if (locale !== "RU") return { ...item, [key]: value };
+      return { ...item, ru: { eyebrow: item.ru?.eyebrow ?? "", title: item.ru?.title ?? "", body: item.ru?.body ?? "", [key]: value } };
+    }));
+  }
 
   function move(index: number, direction: -1 | 1) {
     const next = index + direction;
@@ -62,7 +72,7 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
               <div className="flex items-center gap-2 px-4 py-3">
                 <GripVertical size={16} className="text-mauve" aria-hidden />
                 <button type="button" className="min-w-0 flex-1 text-left text-sm font-semibold" onClick={() => setOpenId(open ? null : section.id)}>
-                  {section.type === "tekst" ? section.title || "Własna sekcja" : SECTION_LABELS[section.type]}
+                  {section.type === "tekst" ? (locale === "RU" ? section.ru?.title || section.title : section.title) || "Własna sekcja" : SECTION_LABELS[section.type]}
                 </button>
                 <button type="button" aria-label="Wyżej" onClick={() => move(index, -1)} className="rounded-full p-1 text-ink hover:bg-blush">
                   <ChevronUp size={16} />
@@ -77,13 +87,13 @@ export function LayoutEditor({ initial, media }: { initial: HomeSection[]; media
               {open ? (
                 <div className="grid gap-3 border-t border-pink-100 px-4 py-4">
                   <Field label="Nadtytuł">
-                    <input className={fieldClass} value={section.eyebrow} onChange={(event) => patch(section.id, { eyebrow: event.target.value })} />
+                    <input className={fieldClass} value={locale === "RU" ? (section.ru?.eyebrow ?? "") : section.eyebrow} placeholder={locale === "RU" ? section.eyebrow : undefined} onChange={(event) => editCopy(section.id, "eyebrow", event.target.value)} />
                   </Field>
                   <Field label="Nagłówek">
-                    <input className={fieldClass} value={section.title} onChange={(event) => patch(section.id, { title: event.target.value })} />
+                    <input className={fieldClass} value={locale === "RU" ? (section.ru?.title ?? "") : section.title} placeholder={locale === "RU" ? section.title : undefined} onChange={(event) => editCopy(section.id, "title", event.target.value)} />
                   </Field>
                   <Field label="Treść">
-                    <textarea className={fieldClass} rows={4} value={section.body} onChange={(event) => patch(section.id, { body: event.target.value })} />
+                    <textarea className={fieldClass} rows={4} value={locale === "RU" ? (section.ru?.body ?? "") : section.body} placeholder={locale === "RU" ? section.body : undefined} onChange={(event) => editCopy(section.id, "body", event.target.value)} />
                   </Field>
                   <div>
                     <p className="mb-2 text-sm font-medium text-ink">Gdzie widać tę sekcję</p>

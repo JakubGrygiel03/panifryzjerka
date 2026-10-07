@@ -12,7 +12,9 @@ import { WorkGallery } from "@/components/visual/work-gallery";
 import { SALON } from "@/lib/brand";
 import { deviceToken } from "@/lib/cms/devices";
 import type { HomeSection } from "@/lib/cms/section-types";
+import { presentComparison, presentFaq, presentLengthGuide, presentReview, presentSection } from "@/lib/cms/present";
 import { getFaqItems, getLengthGuide, phoneHref } from "@/lib/cms/store";
+import type { Locale } from "@/lib/i18n";
 import { salonGallery } from "@/lib/content/gallery";
 import { AFTERCARE, PREP } from "@/lib/content/guides";
 import type { SalonContent } from "@/lib/content/types";
@@ -30,15 +32,19 @@ function Band({ tone, devices, className, children }: { tone: "paper" | "blush";
   );
 }
 
-export function HomeSections({ sections, content }: { sections: HomeSection[]; content: SalonContent }) {
+export function HomeSections({ sections, content, locale = "PL" }: { sections: HomeSection[]; content: SalonContent; locale?: Locale }) {
   const tel = phoneHref(content.settings.phone);
   const mensVariantId = content.services.find((service) => service.id === "strzyzenie-meskie")?.variants[0]?.id ?? "";
-  const faq = getFaqItems();
+  const shown = sections.map((section) => presentSection(section, locale));
+  const faq = getFaqItems().map((item) => presentFaq(item, locale));
+  const lengthGuide = presentLengthGuide(getLengthGuide(), locale);
+  const comparisons = getComparisons().map((item) => presentComparison(item, locale));
+  const reviews = content.reviews.map((review) => presentReview(review, locale));
   let band = 0;
 
   return (
     <>
-      {sections.filter((section) => section.enabled).map((section) => {
+      {shown.filter((section) => section.enabled).map((section) => {
         const tone: "paper" | "blush" = section.type === "hero" ? "blush" : (++band % 2 === 0 ? "paper" : "blush");
         const devices = deviceToken(section.devices);
         if (section.type === "hero") {
@@ -71,7 +77,7 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
               {section.eyebrow ? <p className="eyebrow">{section.eyebrow}</p> : null}
               <h2 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">{section.title}</h2>
               <div className="mt-8">
-                <PriceList services={content.services} compact lengthGuide={getLengthGuide()} />
+                <PriceList services={content.services} compact lengthGuide={lengthGuide} />
               </div>
             </section>
             </Band>
@@ -85,7 +91,7 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
               <h2 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">{section.title}</h2>
               {section.body ? <p className="mt-4 max-w-xl text-base leading-7 font-medium text-ink">{section.body}</p> : null}
               <div className="mt-8">
-                <ComparisonGrid items={getComparisons()} />
+                <ComparisonGrid items={comparisons} />
               </div>
               <div className="mt-10">
                 <WorkGallery photos={salonGallery.filter((photo) => photo.src !== "/salon/biz-05.jpg")} />
@@ -203,7 +209,7 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
               {section.eyebrow ? <p className="eyebrow">{section.eyebrow}</p> : null}
               <h2 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">{section.title}</h2>
               <div className="mt-8 grid gap-4 md:grid-cols-2">
-                {content.reviews.map((review) => (
+                {reviews.map((review) => (
                   <blockquote key={`${review.name}-${review.service}`} className="rounded-[1.75rem] bg-white p-7 ring-1 ring-ink/5">
                     <div className="flex items-center justify-between gap-3">
                       <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
@@ -246,10 +252,16 @@ export function HomeSections({ sections, content }: { sections: HomeSection[]; c
                   href={SALON.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex min-h-32 w-full items-center justify-center gap-2 rounded-[1.4rem] bg-white px-6 text-base font-semibold text-ink sm:w-64"
+                  className="flex min-h-44 w-full items-center justify-center rounded-[1.4rem] bg-white px-6 py-8 text-ink sm:w-72"
                 >
-                  <MapPin size={20} className="text-berry" aria-hidden />
-                  Otwórz Google Maps
+                  <span className="grid grid-cols-[2.75rem_auto_2.75rem] items-center justify-center gap-x-2.5 gap-y-2">
+                    <span className="flex size-11 items-center justify-center justify-self-end rounded-full bg-blush">
+                      <MapPin size={22} className="text-berry" aria-hidden />
+                    </span>
+                    <span className="text-center font-display text-3xl leading-none">Otwórz</span>
+                    <span className="size-11" aria-hidden />
+                    <span className="col-span-3 text-center font-display text-3xl leading-none">Google Maps</span>
+                  </span>
                 </a>
               </div>
             </section>

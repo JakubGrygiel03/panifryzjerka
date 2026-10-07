@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin, Menu, Phone, X } from "lucide-react";
 import { SALON } from "@/lib/brand";
 import { NoticeBar } from "@/components/home/notice-bar";
 import { t } from "@/lib/i18n";
 import { useBookingStore } from "@/store/use-booking-store";
+import { LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 import { useLocaleStore } from "@/store/use-locale-store";
 
 export function SiteHeader({
@@ -26,7 +28,14 @@ export function SiteHeader({
 }) {
   const locale = useLocaleStore((state) => state.locale);
   const setLocale = useLocaleStore((state) => state.setLocale);
+  const router = useRouter();
   const openBooking = useBookingStore((state) => state.openBooking);
+
+  function chooseLocale(code: Locale) {
+    setLocale(code);
+    document.cookie = `${LOCALE_COOKIE}=${code};path=/;max-age=31536000;samesite=lax`;
+    router.refresh();
+  }
   const copy = t(locale);
   const [open, setOpen] = useState(false);
 
@@ -58,7 +67,7 @@ export function SiteHeader({
                 <button
                   key={code}
                   type="button"
-                  onClick={() => setLocale(code)}
+                  onClick={() => chooseLocale(code)}
                   className={`px-2.5 py-1 ${locale === code ? "bg-berry text-white" : "text-white/80"}`}
                   aria-pressed={locale === code}
                 >

@@ -1,5 +1,7 @@
 export type Locale = "PL" | "RU";
 
+export const LOCALE_COOKIE = "pf-locale";
+
 const copy = {
   PL: {
     book: "Zarezerwuj wizytę online",

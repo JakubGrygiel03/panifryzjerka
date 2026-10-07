@@ -12,7 +12,7 @@ import type { OpeningHour, Review, SalonContent, SalonSettings } from "@/lib/con
 
 const FILE = path.join(process.cwd(), "data", "cms.json");
 
-export type FaqItem = { q: string; a: string };
+export type FaqItem = { q: string; a: string; ru?: { q: string; a: string } };
 export type PricePatch = { priceCents: number; durationMinutes: number };
 
 type CmsFile = {
@@ -24,7 +24,7 @@ type CmsFile = {
   heroSlides?: string[];
   heroDevices?: Record<string, DeviceVisibility>;
   comparisons?: ComparisonPair[];
-  lengthGuide?: { note?: string; items?: Partial<LengthGuideItem>[] };
+  lengthGuide?: { note?: string; items?: Partial<LengthGuideItem>[]; ru?: { note?: string; items?: Partial<LengthGuideItem>[] } };
 };
 
 function readFile(): CmsFile {
@@ -70,6 +70,13 @@ export function applyCms(content: SalonContent): SalonContent {
   settings.googleReviewCount = clamp(settings.googleReviewCount, 0, 100000, content.settings.googleReviewCount);
   settings.noticeEnabled = Boolean(settings.noticeEnabled);
   settings.noticeText = String(settings.noticeText ?? "");
+  settings.noticeTextRu = String(settings.noticeTextRu ?? "");
+  settings.openingHours = settings.openingHours.map((row) => ({
+    day: String(row.day ?? ""),
+    hours: String(row.hours ?? ""),
+    dayRu: String(row.dayRu ?? ""),
+    hoursRu: String(row.hoursRu ?? ""),
+  }));
   settings.phone = String(settings.phone || content.settings.phone);
 
   return {
@@ -95,14 +102,24 @@ export function applyPrices(services: ServiceGroup[], prices: Record<string, Pri
   }));
 }
 
+function cleanCopy(value: unknown, max: number) {
+  return String(value ?? "").trim().slice(0, max);
+}
+
 function cleanReviews(reviews: Review[] | undefined): Review[] | null {
   if (!reviews?.length) return null;
   const clean = reviews
-    .map((review) => ({
-      name: String(review.name ?? "").trim(),
-      service: String(review.service ?? "").trim(),
-      text: String(review.text ?? "").trim(),
-    }))
+    .map((review) => {
+      const ru = review.ru;
+      const service = cleanCopy(ru?.service, 80);
+      const text = cleanCopy(ru?.text, 600);
+      return {
+        name: cleanCopy(review.name, 80),
+        service: cleanCopy(review.service, 80),
+        text: cleanCopy(review.text, 600),
+        ru: service || text ? { service, text } : undefined,
+      };
+    })
     .filter((review) => review.name && review.text);
   return clean.length ? clean : null;
 }
@@ -124,14 +141,31 @@ export function getLengthGuide(): LengthGuide {
       hint: textOr(row?.hint, fallback.hint, 180),
     };
   });
-  return { note: textOr(saved?.note, DEFAULT_LENGTH_GUIDE.note, 240), items };
+  const ruItems = LENGTH_ORDER.map((id) => {
+    const row = saved?.ru?.items?.find((item) => item?.id === id);
+    return {
+      id,
+      title: textOr(row?.title, "", 40),
+      mark: textOr(row?.mark, "", 40),
+      hint: textOr(row?.hint, "", 180),
+    };
+  });
+  const noteRu = textOr(saved?.ru?.note, "", 240);
+  const hasRu = Boolean(noteRu || ruItems.some((item) => item.title || item.mark || item.hint));
+  return { note: textOr(saved?.note, DEFAULT_LENGTH_GUIDE.note, 240), items, ru: hasRu ? { note: noteRu, items: ruItems } : undefined };
 }
 
 export function getFaqItems(): FaqItem[] {
   const saved = readFile().faq;
   if (!saved?.length) return FAQ.map((item) => ({ q: item.q, a: item.a }));
   const clean = saved
-    .map((item) => ({ q: String(item.q ?? "").trim(), a: String(item.a ?? "").trim() }))
+    .map((item) => {
+      const q = String(item.q ?? "").trim();
+      const a = String(item.a ?? "").trim();
+      const qRu = String(item.ru?.q ?? "").trim();
+      const aRu = String(item.ru?.a ?? "").trim();
+      return { q, a, ru: qRu || aRu ? { q: qRu, a: aRu } : undefined };
+    })
     .filter((item) => item.q && item.a);
   return clean.length ? clean : FAQ.map((item) => ({ q: item.q, a: item.a }));
 }

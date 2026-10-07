@@ -1,6 +1,6 @@
 import type { ServiceGroup } from "@/lib/booking/types";
 
-export type OpeningHour = { day: string; hours: string };
+export type OpeningHour = { day: string; hours: string; dayRu?: string; hoursRu?: string };
 
 export type SalonSettings = {
   phone: string;
@@ -10,6 +10,7 @@ export type SalonSettings = {
   mapsUrl: string;
   noticeEnabled: boolean;
   noticeText: string;
+  noticeTextRu?: string;
   openingHours: OpeningHour[];
   googleRating: number;
   googleReviewCount: number;
@@ -38,6 +39,7 @@ export type Review = {
   name: string;
   text: string;
   service: string;
+  ru?: { service: string; text: string };
 };
 
 export type SalonContent = {

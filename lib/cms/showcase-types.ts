@@ -11,6 +11,7 @@ export type ComparisonPair = {
   before: string;
   after: string;
   beforeSide: ComparisonSide;
+  ru?: { title: string; text: string };
 };
 
 export const DEFAULT_HERO_SLIDES = [
