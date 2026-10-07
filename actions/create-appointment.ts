@@ -23,7 +23,15 @@ const schema = z.object({
   startsAt: z.string().datetime(),
   customerName: z.string().trim().min(1).max(120),
   customerPhone: z.string().trim().regex(/^[+0-9][0-9\s-]{4,20}$/, "Podaj numer telefonu."),
-  customerEmail: z.string().trim().email("Podaj adres e-mail. Na ten adres wyślemy potwierdzenie wizyty."),
+  customerEmail: z
+    .string()
+    .trim()
+    .max(120, "Adres e-mail jest za długi.")
+    .refine(
+      (value) => value.length === 0 || z.string().email().safeParse(value).success,
+      "To nie wygląda na adres e-mail. Popraw go albo zostaw pole puste.",
+    )
+    .transform((value) => value || null),
   notes: z.string().trim().max(1000).optional(),
   website: z.string().max(200).optional(),
 });

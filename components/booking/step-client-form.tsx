@@ -39,6 +39,11 @@ export function StepClientForm() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!variantId || !slotStaffId || !slotStart) return;
+    const email = customerEmail.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      setError(copy.emailInvalid);
+      return;
+    }
     setPending(true);
     setError("");
     const result = await createAppointment({
@@ -112,7 +117,7 @@ export function StepClientForm() {
       </label>
       <label className="block text-sm">
         {copy.email}
-        <input required type="email" autoComplete="email" value={customerEmail} onChange={(event) => setField("customerEmail", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" />
+        <input type="email" inputMode="email" autoComplete="email" maxLength={120} value={customerEmail} onChange={(event) => setField("customerEmail", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" />
       </label>
       <label className="block text-sm">
         {copy.note}
