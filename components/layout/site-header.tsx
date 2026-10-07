@@ -9,7 +9,21 @@ import { t } from "@/lib/i18n";
 import { useBookingStore } from "@/store/use-booking-store";
 import { useLocaleStore } from "@/store/use-locale-store";
 
-export function SiteHeader({ noticeEnabled, noticeText }: { noticeEnabled: boolean; noticeText: string }) {
+export function SiteHeader({
+  noticeEnabled,
+  noticeText,
+  phoneDisplay,
+  phoneHref,
+  accountHref,
+  accountLabel,
+}: {
+  noticeEnabled: boolean;
+  noticeText: string;
+  phoneDisplay: string;
+  phoneHref: string;
+  accountHref: string;
+  accountLabel: string;
+}) {
   const locale = useLocaleStore((state) => state.locale);
   const setLocale = useLocaleStore((state) => state.setLocale);
   const openBooking = useBookingStore((state) => state.openBooking);
@@ -17,11 +31,12 @@ export function SiteHeader({ noticeEnabled, noticeText }: { noticeEnabled: boole
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: "/cennik", label: copy.price },
-    { href: "/metamorfozy", label: copy.transformations },
-    { href: "/o-nas", label: copy.about },
-    { href: "/faq", label: "FAQ" },
+    { href: "/#cennik", label: copy.price },
+    { href: "/#metamorfozy", label: copy.transformations },
+    { href: "/#o-nas", label: copy.about },
+    { href: "/#faq", label: "FAQ" },
     { href: "/kontakt", label: copy.contact },
+    { href: accountHref, label: accountLabel },
   ];
 
   return (
@@ -34,9 +49,9 @@ export function SiteHeader({ noticeEnabled, noticeText }: { noticeEnabled: boole
             {SALON.addressLabel}
           </a>
           <div className="flex items-center gap-3">
-            <a href={SALON.phoneHref} className="inline-flex items-center gap-1.5 font-medium hover:text-pink-100">
+            <a href={phoneHref} className="inline-flex items-center gap-1.5 font-medium hover:text-pink-100">
               <Phone size={13} aria-hidden />
-              {SALON.phoneDisplay}
+              {phoneDisplay}
             </a>
             <div className="flex overflow-hidden rounded-full bg-white/10">
               {(["PL", "RU"] as const).map((code) => (
@@ -54,7 +69,7 @@ export function SiteHeader({ noticeEnabled, noticeText }: { noticeEnabled: boole
           </div>
         </div>
       </div>
-      <div className="border-b border-ink/5 bg-blush/85 backdrop-blur-md">
+      <div className="border-b border-ink/10 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
           <Link href="/" className="font-display text-2xl tracking-tight">
             Pani<span className="text-berry">Fryzjerka</span>

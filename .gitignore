@@ -5,5 +5,9 @@ node_modules
 .env*.local
 .vercel
 data/local-booking.json
+data/time-offs.json
+data/push-subscriptions.json
+data/google-reviews-cache.json
+data/media-index.json
 data/*.tmp
 *.tsbuildinfo

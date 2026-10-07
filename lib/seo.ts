@@ -1,6 +1,6 @@
 import { SALON, STAFF } from "@/lib/brand";
 import { CATEGORIES } from "@/lib/booking/catalog";
-import { FAQ } from "@/lib/content/guides";
+import type { FaqItem } from "@/lib/cms/store";
 
 export function hairSalonJsonLd() {
   return {
@@ -63,11 +63,11 @@ export function hairSalonJsonLd() {
   };
 }
 
-export function faqJsonLd() {
+export function faqJsonLd(items: readonly FaqItem[]) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: FAQ.map((item) => ({
+    mainEntity: items.map((item) => ({
       "@type": "Question",
       name: item.q,
       acceptedAnswer: { "@type": "Answer", text: item.a },

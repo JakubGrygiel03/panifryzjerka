@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { FaqList } from "@/components/home/faq-list";
 import { SALON } from "@/lib/brand";
-import { AFTERCARE, FAQ, PREP, SZYCIE } from "@/lib/content/guides";
+import { getFaqItems } from "@/lib/cms/store";
+import { AFTERCARE, PREP, SZYCIE } from "@/lib/content/guides";
 
 export function SalonStory() {
+  const faq = getFaqItems();
   return (
     <div className="mx-auto max-w-6xl space-y-16 px-4 py-8 sm:px-6">
       <section>
@@ -12,8 +15,8 @@ export function SalonStory() {
         <ol className="mt-8 grid gap-px overflow-hidden rounded-[1.75rem] bg-ink/8 md:grid-cols-3">
           {[
             ["01", "Usługa", "Wybierasz zabieg i długość włosów. Od tego zależy cena i czas."],
-            ["02", "Godzina", "Widzisz wolne terminy Pani Iryny, już z 15-minutowym buforem."],
-            ["03", "Telefon", "Podajesz imię i numer. Bez konta i bez prowizji."],
+            ["02", "Godzina", "Wybierasz wolną godzinę u Pani Iryny."],
+            ["03", "Telefon", "Podajesz imię i numer. Konto nie jest potrzebne."],
           ].map(([n, title, text]) => (
             <li key={n} className="bg-white p-7">
               <p className="text-base font-semibold text-ink">{n}</p>
@@ -39,9 +42,11 @@ export function SalonStory() {
       <section className="grid gap-6 md:grid-cols-2">
         <article className="rounded-[1.75rem] bg-white p-8 ring-1 ring-ink/10">
           <h2 className="font-display text-3xl text-ink">Przed wizytą</h2>
-          <ul className="mt-5 space-y-3 text-base leading-7 font-medium text-ink">
+          <ul className="mt-5 space-y-3 text-base leading-7 text-ink">
             {PREP.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item.title}>
+                <span className="font-semibold">{item.title}.</span> {item.text}
+              </li>
             ))}
           </ul>
           <Link href="/przygotowanie" className="mt-5 inline-block text-base font-semibold text-berry">
@@ -50,9 +55,11 @@ export function SalonStory() {
         </article>
         <article className="rounded-[1.75rem] bg-white p-8 ring-1 ring-ink/10">
           <h2 className="font-display text-3xl text-ink">Po zabiegu</h2>
-          <ul className="mt-5 space-y-3 text-base leading-7 font-medium text-ink">
+          <ul className="mt-5 space-y-3 text-base leading-7 text-ink">
             {AFTERCARE.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item.title}>
+                <span className="font-semibold">{item.title}.</span> {item.text}
+              </li>
             ))}
           </ul>
           <Link href="/pielegnacja" className="mt-5 inline-block text-base font-semibold text-berry">
@@ -68,7 +75,7 @@ export function SalonStory() {
             Wszystkie odpowiedzi
           </Link>
         </div>
-        <FaqList items={FAQ.slice(0, 4)} />
+        <FaqList items={faq.slice(0, 4)} />
       </section>
 
       <section className="flex flex-col justify-between gap-6 rounded-[1.75rem] bg-ink px-8 py-10 text-white sm:flex-row sm:items-end">
@@ -81,7 +88,8 @@ export function SalonStory() {
           </h2>
           <p className="mt-3 max-w-md text-base leading-7 text-white">Bezpłatny parking jest przy budynku. Wjazd dla wózka jest na miejscu.</p>
         </div>
-        <a href={SALON.mapsUrl} className="text-sm font-semibold text-pink-100 underline decoration-white/30 underline-offset-4">
+        <a href={SALON.mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink sm:self-end">
+          <MapPin size={18} className="text-berry" aria-hidden />
           Otwórz Google Maps
         </a>
       </section>

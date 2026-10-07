@@ -104,6 +104,56 @@ export function calculateStaffSlots(input: SlotCalculatorInput, staff: StaffDayI
   return slots;
 }
 
+export type GridSlot = AvailableSlot & { available: boolean };
+
+export function calculateStaffGrid(input: SlotCalculatorInput, staff: StaffDayInput): GridSlot[] {
+  const dayOfWeek = dayOfWeekInTimeZone(input.date, input.timeZone);
+  const windows = staff.workingHours.filter((window) => window.dayOfWeek === dayOfWeek);
+  const earliest = addMinutes(input.now ?? new Date(), input.leadMinutes ?? 30);
+  const occupiedMinutes = input.durationMinutes + input.bufferMinutes;
+  const slots: GridSlot[] = [];
+
+  for (const window of windows) {
+    const startTime = window.startTime.slice(0, 5);
+    const endTime = window.endTime.slice(0, 5);
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+    const windowStartMinute = startHour * 60 + startMinute;
+    const windowEndMinute = endHour * 60 + endMinute;
+    const windowStart = zonedLocalToUtc(input.date, startTime, input.timeZone);
+    const windowEnd = zonedLocalToUtc(input.date, endTime, input.timeZone);
+
+    for (let minute = windowStartMinute; minute + occupiedMinutes <= windowEndMinute; minute += input.slotIntervalMinutes) {
+      const label = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+      const start = zonedLocalToUtc(input.date, label, input.timeZone);
+      const end = addMinutes(start, occupiedMinutes);
+      if (start < windowStart || end > windowEnd || start < earliest) continue;
+      const blocked = [...staff.timeOffs, ...staff.appointments].some((busy) => overlaps(start, end, busy));
+      slots.push({ start, end, staffId: staff.staffId, available: !blocked });
+    }
+  }
+
+  return slots;
+}
+
+export function calculateGrid(input: SlotCalculatorInput): GridSlot[] {
+  const grouped = new Map<string, GridSlot[]>();
+  for (const staff of input.staff) {
+    for (const slot of calculateStaffGrid(input, staff)) {
+      const key = slot.start.toISOString();
+      const list = grouped.get(key) ?? [];
+      list.push(slot);
+      grouped.set(key, list);
+    }
+  }
+  const merged: GridSlot[] = [];
+  for (const options of grouped.values()) {
+    const open = options.find((slot) => slot.available);
+    merged.push(open ?? { ...options[0], available: false });
+  }
+  return merged.sort((left, right) => left.start.getTime() - right.start.getTime());
+}
+
 export function calculateSlots(input: SlotCalculatorInput): AvailableSlot[] {
   return input.staff
     .flatMap((staff) => calculateStaffSlots(input, staff))

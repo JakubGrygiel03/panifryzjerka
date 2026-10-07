@@ -6,7 +6,6 @@ export const CATEGORIES = [
   "Strzyżenie & Modelowanie",
   "Afroloki",
   "Pielęgnacja",
-  "Paznokcie & Rzęsy",
 ] as const;
 
 const LENGTHS: HairLength[] = ["short", "medium", "long", "very_long"];
@@ -78,7 +77,6 @@ const color = CATEGORIES[0];
 const cut = CATEGORIES[1];
 const afro = CATEGORIES[2];
 const care = CATEGORIES[3];
-const nails = CATEGORIES[4];
 
 export const SERVICE_CATALOG: ServiceGroup[] = [
   withLengths("farbowanie-odrostow", "Farbowanie odrostów", color, [IRYNA], [130, 160, 190, 230], [90, 105, 120, 150]),
@@ -100,15 +98,6 @@ export const SERVICE_CATALOG: ServiceGroup[] = [
   withLengths("mycie-modelowanie", "Mycie i modelowanie", care, [IRYNA], [70, 80, 90, 110], [40, 45, 50, 60]),
   withLengths("kuracja-regenerujaca", "Kuracja regenerująca", care, [IRYNA], [120, 140, 160, 190], [45, 50, 60, 75]),
   withLengths("rytual-pielegnacyjny", "Rytuał pielęgnacyjny", care, [IRYNA], [90, 110, 130, 150], [30, 40, 45, 60]),
-  single("manicure-hybrydowy", "Manicure hybrydowy", nails, [IRYNA], 120, 75),
-  single("przedluzanie-paznokci", "Przedłużanie paznokci (żel)", nails, [IRYNA], 160, 120),
-  single("pedicure-hybrydowy", "Pedicure hybrydowy", nails, [IRYNA], 140, 90),
-  single("usuniecie-hybrydy", "Usunięcie hybrydy", nails, [IRYNA], 40, 20),
-  single("rzesy-volume", "Rzęsy Volume", nails, [IRYNA], 150, 120),
-  single("rzesy-classic", "Rzęsy Classic", nails, [IRYNA], 120, 90),
-  single("uzupelnienie-rzes", "Uzupełnienie rzęs", nails, [IRYNA], 80, 60),
-  single("henna", "Henna brwi i rzęs", nails, [IRYNA], 80, 40),
-  single("regulacja-brwi", "Regulacja brwi", nails, [IRYNA], 30, 20),
 ];
 
 export const DEFAULT_WORKING_HOURS: WorkingWindow[] = [

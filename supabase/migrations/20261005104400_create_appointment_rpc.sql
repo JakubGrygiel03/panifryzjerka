@@ -32,7 +32,7 @@ begin
     from public.appointments
     where staff_id = p_staff_id
       and status <> 'cancelled'
-      and tstzrange(starts_at, ends_at, '[)') && tstzrange(p_starts_at, p_ends_at, '[)')
+      and tstzrange(starts_at, ends_at, '[)'::text) && tstzrange(p_starts_at, p_ends_at, '[)'::text)
   ) then
     raise exception 'Ten termin został właśnie zajęty' using errcode = '23P01';
   end if;

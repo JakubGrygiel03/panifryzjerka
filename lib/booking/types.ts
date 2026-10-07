@@ -61,6 +61,7 @@ export type PublicSlot = {
   end: string;
   staffId: string;
   staffName: string;
+  available: boolean;
 };
 
 export type StoredAppointment = {
@@ -71,6 +72,7 @@ export type StoredAppointment = {
   customerName: string;
   customerPhone: string;
   customerEmail: string | null;
+  customerId?: string | null;
   notes: string | null;
   startsAt: string;
   endsAt: string;

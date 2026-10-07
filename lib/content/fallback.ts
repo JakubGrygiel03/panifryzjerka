@@ -13,7 +13,7 @@ export const fallbackContent: SalonContent = {
     noticeEnabled: false,
     noticeText: "",
     openingHours: [
-      { day: "Poniedziałek – piątek", hours: "9:00–20:00" },
+      { day: "Poniedziałek–piątek", hours: "9:00–20:00" },
       { day: "Sobota", hours: "9:00–18:00" },
       { day: "Niedziela", hours: "nieczynne" },
     ],

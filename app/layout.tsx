@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · PaniFryzjerka",
   },
   description:
-    "Rodzinny salon beauty w Gdańsku przy ul. Skarpowej 24. Koloryzacja, #szycieSiwizny, afroloki, paznokcie i rzęsy. Parking, psy i dostęp dla niepełnosprawnych. Ocena 4.9.",
+    "Rodzinny salon fryzjerski w Gdańsku przy ul. Skarpowej 24. Koloryzacja, #szycieSiwizny i afroloki. Parking, psy i dostęp dla niepełnosprawnych. Ocena 4.9.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "PaniFryzjerka — salon beauty w Gdańsku",
@@ -29,6 +29,7 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   applicationName: "PaniFryzjerka",
+  appleWebApp: { capable: true, title: "PaniFryzjerka", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

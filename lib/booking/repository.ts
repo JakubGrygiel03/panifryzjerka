@@ -1,8 +1,10 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { SALON } from "@/lib/brand";
-import { DEFAULT_WORKING_HOURS, findVariant, staffName } from "@/lib/booking/catalog";
-import { calculateAnyStaffSlots, calculateSlots, zonedLocalToUtc } from "@/lib/booking/slot-calculator";
+import { DEFAULT_WORKING_HOURS, staffName } from "@/lib/booking/catalog";
+import { findPublishedVariant } from "@/lib/cms/store";
+import { calculateGrid, zonedLocalToUtc } from "@/lib/booking/slot-calculator";
+import { listTimeOffRows } from "@/lib/booking/time-offs";
 import type {
   AppointmentSource,
   AppointmentStatus,
@@ -11,7 +13,8 @@ import type {
   StaffDayInput,
   StoredAppointment,
 } from "@/lib/booking/types";
-import { createAdminClient, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+import { bookingBackend } from "@/lib/booking/backend";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const FILE = path.join(process.cwd(), "data", "local-booking.json");
 
@@ -26,15 +29,12 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
   return run;
 }
 
-export function bookingBackend(): "supabase" | "local" | "unconfigured" {
-  if (isSupabaseAdminConfigured()) return "supabase";
-  if (process.env.NODE_ENV !== "production") return "local";
-  return "unconfigured";
-}
+export { bookingBackend };
 
 async function readLocal(): Promise<StoredAppointment[]> {
   try {
-    const raw = await readFile(FILE, "utf8");
+    const raw = (await readFile(FILE, "utf8")).replace(/^\uFEFF/, "").trim();
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as StoredAppointment[];
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
@@ -106,21 +106,12 @@ async function loadAppointments(dayStart: Date, dayEnd: Date): Promise<StoredApp
 }
 
 async function loadTimeOffs(staffIds: string[], dayStart: Date, dayEnd: Date) {
-  if (bookingBackend() !== "supabase") return new Map<string, { start: Date; end: Date }[]>();
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("time_offs")
-    .select("staff_id, starts_at, ends_at")
-    .eq("tenant_id", SALON.tenantId)
-    .in("staff_id", staffIds)
-    .lt("starts_at", dayEnd.toISOString())
-    .gt("ends_at", dayStart.toISOString());
-  if (error) throw new Error(error.message);
+  const rows = await listTimeOffRows(staffIds, dayStart, dayEnd);
   const grouped = new Map<string, { start: Date; end: Date }[]>();
-  for (const row of data ?? []) {
-    const list = grouped.get(row.staff_id) ?? [];
-    list.push({ start: new Date(row.starts_at), end: new Date(row.ends_at) });
-    grouped.set(row.staff_id, list);
+  for (const row of rows) {
+    const list = grouped.get(row.staffId) ?? [];
+    list.push({ start: new Date(row.startsAt), end: new Date(row.endsAt) });
+    grouped.set(row.staffId, list);
   }
   return grouped;
 }
@@ -153,7 +144,7 @@ async function loadWorkingHours(staffIds: string[]) {
 }
 
 export async function buildSlotInput(date: string, variantId: string, staffId: string): Promise<SlotCalculatorInput> {
-  const match = findVariant(variantId);
+  const match = findPublishedVariant(variantId);
   if (!match) throw new Error("Nie znaleziono usługi.");
 
   const staffIds = staffId === "any" ? match.group.staffIds : match.group.staffIds.filter((id) => id === staffId);
@@ -188,12 +179,14 @@ export async function buildSlotInput(date: string, variantId: string, staffId: s
 
 export async function listPublicSlots(date: string, variantId: string, staffId: string): Promise<PublicSlot[]> {
   const input = await buildSlotInput(date, variantId, staffId);
-  const slots = staffId === "any" ? calculateAnyStaffSlots(input) : calculateSlots(input);
+  input.slotIntervalMinutes = 30;
+  const slots = calculateGrid(input);
   return slots.map((slot) => ({
     start: slot.start.toISOString(),
     end: slot.end.toISOString(),
     staffId: slot.staffId,
     staffName: staffName(slot.staffId),
+    available: slot.available,
   }));
 }
 
@@ -229,6 +222,7 @@ export async function saveAppointment(input: {
   customerName: string;
   customerPhone: string;
   customerEmail: string | null;
+  customerId?: string | null;
   notes: string | null;
   startsAt: string;
   endsAt: string;
@@ -270,6 +264,9 @@ export async function saveAppointment(input: {
       (row) => row.staffId === input.staffId && overlaps(input.startsAt, input.endsAt, row),
     );
     if (clash) throw new Error("Ten termin został właśnie zajęty. Wybierz inną godzinę.");
+    if (rows.length >= 3000) {
+      throw new Error("Lista wizyt na tym komputerze jest pełna. Podłącz bazę Supabase albo usuń stare wizyty.");
+    }
     const created: StoredAppointment = {
       id: crypto.randomUUID(),
       tenantId: SALON.tenantId,
@@ -278,6 +275,7 @@ export async function saveAppointment(input: {
       customerName: input.customerName,
       customerPhone: input.customerPhone,
       customerEmail: input.customerEmail,
+      customerId: input.customerId ?? null,
       notes: input.notes,
       startsAt: input.startsAt,
       endsAt: input.endsAt,
@@ -315,8 +313,17 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
   });
 }
 
+export async function listStaffWorkingHours(staffId: string) {
+  const hours = await loadWorkingHours([staffId]);
+  return hours.get(staffId) ?? DEFAULT_WORKING_HOURS;
+}
+
+export async function listAppointmentsBetween(start: Date, end: Date) {
+  return loadAppointments(start, end);
+}
+
 export function assertCatalogStaff(variantId: string, staffId: string) {
-  const match = findVariant(variantId);
+  const match = findPublishedVariant(variantId);
   if (!match) return null;
   if (!match.group.staffIds.includes(staffId)) return null;
   return match;

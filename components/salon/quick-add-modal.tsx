@@ -23,10 +23,15 @@ export function QuickAddModal({ date, onClose }: { date: string; onClose: () => 
   useEffect(() => {
     const params = new URLSearchParams({ date, variantId, staffId });
     fetch(`/api/booking/slots?${params.toString()}`)
-      .then((response) => response.json())
-      .then((body: { slots?: PublicSlot[] }) => {
-        setSlots(body.slots ?? []);
-        setStartsAt(body.slots?.[0]?.start ?? "");
+      .then(async (response) => {
+        const text = (await response.text()).replace(/^\uFEFF/, "").trim();
+        if (!text) return [] as PublicSlot[];
+        const body = JSON.parse(text) as { slots?: PublicSlot[] };
+        return (body.slots ?? []).filter((slot) => slot.available);
+      })
+      .then((open) => {
+        setSlots(open);
+        setStartsAt(open[0]?.start ?? "");
       })
       .catch(() => setSlots([]));
   }, [date, variantId, staffId]);

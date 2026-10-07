@@ -1,37 +1,22 @@
 import { BeforeAfterSlider } from "@/components/visual/before-after-slider";
+import type { ComparisonPair } from "@/lib/cms/showcase-types";
 
-const comparisons = [
-  {
-    before: "/salon/biz-05.jpg",
-    after: "/salon/biz-05.jpg",
-    split: true,
-    beforeSide: "right" as const,
-    title: "Szycie siwizny",
-    tag: "Przed i po",
-  },
-  {
-    before: "/salon/inspiration-07.jpg",
-    after: "/salon/inspiration-07.jpg",
-    split: true,
-    beforeSide: "left" as const,
-    title: "Koloryzacja",
-    tag: "Róż pod spodem",
-  },
-  {
-    before: "/salon/perm-before.jpg",
-    after: "/salon/perm-after.jpg",
-    split: false,
-    beforeSide: "right" as const,
-    title: "Trwała ondulacja",
-    tag: "Wałki i efekt",
-  },
-];
+export function ComparisonGrid({ items }: { items: ComparisonPair[] }) {
+  if (items.length === 0) {
+    return <p className="text-base text-ink">Pary przed i po dodasz w panelu, w zakładce Pokaz.</p>;
+  }
 
-export function ComparisonGrid() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {comparisons.map((item) => (
-        <BeforeAfterSlider key={item.title} {...item} />
+      {items.map((item) => (
+        <BeforeAfterSlider
+          key={item.id}
+          before={item.before}
+          after={item.after}
+          split={item.before === item.after}
+          beforeSide={item.beforeSide}
+          title={item.title}
+        />
       ))}
     </div>
   );

@@ -1,3 +1,5 @@
+import { applyCms, readCms } from "@/lib/cms/store";
+import { loadGoogleReviews } from "@/lib/content/google-reviews";
 import { fallbackContent } from "@/lib/content/fallback";
 import type { SalonContent, SalonSettings } from "@/lib/content/types";
 import type { HairLength, ServiceGroup } from "@/lib/booking/types";
@@ -33,13 +35,19 @@ function usableServices(services: ServiceGroup[] | null | undefined): ServiceGro
   return valid ? services : null;
 }
 
+async function withReviews(content: SalonContent): Promise<SalonContent> {
+  if (readCms().reviews?.length) return content;
+  const google = await loadGoogleReviews();
+  return google?.length ? { ...content, reviews: google } : content;
+}
+
 export async function getSalonContent(): Promise<SalonContent> {
-  if (!isSanityConfigured()) return fallbackContent;
+  if (!isSanityConfigured()) return withReviews(applyCms(fallbackContent));
 
   try {
     const payload = await sanityClient.fetch<SanityPayload>(salonContentQuery, {}, { next: { revalidate: 60 } });
     const services = usableServices(payload.services) ?? fallbackContent.services;
-    return {
+    return withReviews(applyCms({
       settings: { ...fallbackContent.settings, ...(payload.settings ?? {}) },
       services,
       transformations:
@@ -48,8 +56,8 @@ export async function getSalonContent(): Promise<SalonContent> {
           : fallbackContent.transformations,
       team: payload.team?.length ? payload.team : fallbackContent.team,
       reviews: fallbackContent.reviews,
-    };
+    }));
   } catch {
-    return fallbackContent;
+    return withReviews(applyCms(fallbackContent));
   }
 }

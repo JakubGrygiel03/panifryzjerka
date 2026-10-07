@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import type { ServiceGroup } from "@/lib/booking/types";
+import { DEFAULT_LENGTH_GUIDE, type LengthGuide } from "@/lib/content/length-guide";
 import { useBookingStore } from "@/store/use-booking-store";
 
-export function BookingDrawer({ services }: { services: ServiceGroup[] }) {
+export function BookingDrawer({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { services: ServiceGroup[]; lengthGuide?: LengthGuide }) {
   const pathname = usePathname();
   const open = useBookingStore((state) => state.open);
   const closeBooking = useBookingStore((state) => state.closeBooking);
@@ -33,18 +34,18 @@ export function BookingDrawer({ services }: { services: ServiceGroup[] }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-title"
-        className="animate-rise max-h-[92dvh] w-full overflow-auto rounded-t-[1.75rem] bg-blush p-6 shadow-2xl md:max-w-lg md:rounded-[1.75rem]"
+        className="animate-rise flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl md:h-[min(88dvh,820px)] md:max-w-3xl md:rounded-[1.75rem]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between border-b border-pink-100 px-5 py-4 sm:px-6">
           <h2 id="booking-title" className="font-display text-2xl">
             Rezerwacja
           </h2>
-          <button type="button" onClick={closeBooking} aria-label="Zamknij" className="rounded-full p-2">
+          <button type="button" onClick={closeBooking} aria-label="Zamknij" className="rounded-full p-2 hover:bg-blush">
             <X size={18} />
           </button>
         </div>
-        <BookingFlow services={services} />
+        <BookingFlow services={services} lengthGuide={lengthGuide} />
       </div>
     </div>
   );

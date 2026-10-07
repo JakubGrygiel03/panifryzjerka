@@ -1,10 +1,15 @@
 "use client";
 
+import { Scissors } from "lucide-react";
+
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col items-start justify-center px-4">
-      <h1 className="font-display text-4xl">Coś się zacięło</h1>
-      <button type="button" onClick={reset} className="mt-6 rounded-full bg-berry px-4 py-2 text-sm font-semibold text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+      <h1 className="font-display text-4xl text-ink sm:text-5xl">
+        Coś się zacięło.
+        <Scissors className="ml-2 inline-block text-berry" size={32} aria-hidden />
+      </h1>
+      <button type="button" onClick={reset} className="mt-8 rounded-full bg-berry px-6 py-3 text-sm font-semibold text-white hover:bg-berry-deep">
         Spróbuj ponownie
       </button>
     </main>

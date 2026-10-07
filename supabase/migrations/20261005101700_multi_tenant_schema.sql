@@ -5,6 +5,8 @@
 create extension if not exists pgcrypto;
 create extension if not exists btree_gist;
 
+create type public.timerange as range (subtype = time);
+
 -- confirmed  — wizyta blokuje slot
 -- cancelled  — slot wraca do puli
 -- completed  — wizyta się odbyła, historia zostaje zablokowana
@@ -163,7 +165,7 @@ create table public.working_hours (
     exclude using gist (
       staff_id with =,
       day_of_week with =,
-      timerange(start_time, end_time, '[)') with &&
+      timerange(start_time, end_time, '[)'::text) with &&
     )
 );
 
@@ -191,7 +193,7 @@ create table public.time_offs (
   constraint time_offs_no_overlap
     exclude using gist (
       staff_id with =,
-      tstzrange(starts_at, ends_at, '[)') with &&
+      tstzrange(starts_at, ends_at, '[)'::text) with &&
     )
 );
 
@@ -217,7 +219,7 @@ create table public.appointments (
   updated_at timestamptz not null default now(),
   blocking_range tstzrange generated always as (
     case
-      when status <> 'cancelled' then tstzrange(starts_at, ends_at, '[)')
+      when status <> 'cancelled' then tstzrange(starts_at, ends_at, '[)'::text)
       else null
     end
   ) stored,

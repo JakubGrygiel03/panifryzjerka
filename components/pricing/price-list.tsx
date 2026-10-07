@@ -1,31 +1,42 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { LengthGuideCard } from "@/components/pricing/length-guide";
 import { CATEGORIES } from "@/lib/booking/catalog";
 import type { HairLength, ServiceGroup } from "@/lib/booking/types";
+import { DEFAULT_LENGTH_GUIDE, lengthItem, type LengthGuide } from "@/lib/content/length-guide";
 import { formatPln } from "@/lib/utils";
 import { t } from "@/lib/i18n";
 import { useBookingStore } from "@/store/use-booking-store";
 import { useLocaleStore } from "@/store/use-locale-store";
 
 const lengthOrder: HairLength[] = ["short", "medium", "long", "very_long"];
+const ALL = "Wszystkie";
+const HITS = ["szycie-siwizny", "airtouch", "balayage", "farbowanie-odrostow", "strzyzenie-damskie-modelowanie", "afroloki"];
 
-export function PriceList({ services }: { services: ServiceGroup[] }) {
+export function PriceList({ services, compact = false, lengthGuide = DEFAULT_LENGTH_GUIDE }: { services: ServiceGroup[]; compact?: boolean; lengthGuide?: LengthGuide }) {
   const copy = t(useLocaleStore((state) => state.locale));
   const openBooking = useBookingStore((state) => state.openBooking);
-  const [category, setCategory] = useState<string>(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(ALL);
   const [lengths, setLengths] = useState<Record<string, HairLength>>({});
   const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(!compact);
 
-  const visible = useMemo(
-    () =>
-      services.filter((service) => {
-        const matchesCategory = service.category === category;
-        const matchesQuery = service.name.toLowerCase().includes(query.trim().toLowerCase());
-        return query.trim() ? matchesQuery : matchesCategory;
-      }),
-    [services, category, query],
-  );
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return services.filter((service) => {
+      const inCategory = category === ALL || service.category === category;
+      const haystack = `${service.name} ${service.category}`.toLowerCase();
+      return inCategory && (!needle || haystack.includes(needle));
+    });
+  }, [services, category, query]);
+
+  const shown = useMemo(() => {
+    if (expanded || query.trim() || category !== ALL) return visible;
+    const hits = HITS.map((id) => visible.find((service) => service.id === id)).filter((service): service is ServiceGroup => Boolean(service));
+    return hits.length ? hits : visible.slice(0, 6);
+  }, [expanded, query, category, visible]);
 
   return (
     <div>
@@ -35,11 +46,11 @@ export function PriceList({ services }: { services: ServiceGroup[] }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="mt-2 w-full rounded-full bg-white px-4 py-3 text-sm ring-1 ring-ink/10 outline-none"
-          placeholder="np. szycie, grzywka, rzęsy"
+          placeholder="np. szycie, grzywka, afroloki, tonowanie"
         />
       </label>
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {CATEGORIES.map((item) => (
+      <div className="flex flex-wrap gap-2 pb-2">
+        {[ALL, ...CATEGORIES].map((item) => (
           <button
             key={item}
             type="button"
@@ -52,8 +63,11 @@ export function PriceList({ services }: { services: ServiceGroup[] }) {
           </button>
         ))}
       </div>
+      <div className="mt-4">
+        <LengthGuideCard guide={lengthGuide} />
+      </div>
       <div className="mt-4 overflow-hidden rounded-[1.75rem] bg-white ring-1 ring-ink/5">
-        {visible.map((service) => {
+        {shown.map((service) => {
           const hasLengths = service.variants.some((variant) => variant.hairLength);
           const selectedLength = lengths[service.id] ?? "medium";
           const variant =
@@ -66,8 +80,9 @@ export function PriceList({ services }: { services: ServiceGroup[] }) {
                     {service.name}{" "}
                     {service.highlight ? <span className="text-berry">#szycieSiwizny</span> : null}
                   </h3>
+                  {category === ALL || query.trim() ? <p className="mt-1 text-sm font-medium text-berry">{service.category}</p> : null}
                   <p className="mt-1 text-sm text-mauve">
-                    ok. {variant.durationMinutes} {copy.minutes} + {variant.bufferMinutes} min na porządek stanowiska
+                    ok. {variant.durationMinutes} {copy.minutes}
                   </p>
                 </div>
                 <p className="font-display text-2xl text-ink">{formatPln(variant.priceCents)}</p>
@@ -80,7 +95,12 @@ export function PriceList({ services }: { services: ServiceGroup[] }) {
                       const option = service.variants.find((item) => item.hairLength === length);
                       if (!option) return null;
                       const active = option.id === variant.id;
-                      const labels = { short: copy.short, medium: copy.medium, long: copy.long, very_long: copy.veryLong };
+                      const labels = {
+                        short: lengthItem(lengthGuide, "short").title,
+                        medium: lengthItem(lengthGuide, "medium").title,
+                        long: lengthItem(lengthGuide, "long").title,
+                        very_long: lengthItem(lengthGuide, "very_long").title,
+                      };
                       return (
                         <button
                           key={length}
@@ -105,9 +125,19 @@ export function PriceList({ services }: { services: ServiceGroup[] }) {
             </article>
           );
         })}
+        {shown.length === 0 ? <p className="p-6 text-sm text-ink">Nie ma takiej usługi. Zmień frazę albo kategorię.</p> : null}
       </div>
-      {visible.length === 0 ? <p className="mt-4 text-sm text-mauve">Brak usługi o tej nazwie w tej kategorii.</p> : null}
-      <p className="mt-4 text-sm text-mauve">{copy.priceNote} Płatność w salonie, po zabiegu. Rezerwacja nie pobiera przedpłaty.</p>
+      {compact && !expanded && category === ALL && !query.trim() ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-berry shadow-[0_10px_24px_-16px_rgba(192,38,116,0.9)] ring-1 ring-berry/15 transition-colors hover:bg-berry hover:text-white"
+        >
+          Zobacz pełny cennik
+          <ChevronDown size={16} aria-hidden />
+        </button>
+      ) : null}
+      <p className="mx-auto mt-4 max-w-xl text-center text-sm leading-6 text-mauve">{copy.priceNote} Płatność w salonie, po zabiegu. Rezerwacja nie pobiera przedpłaty.</p>
     </div>
   );
 }

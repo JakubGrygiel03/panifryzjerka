@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { listPublicSlots } from "@/lib/booking/repository";
+import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,9 @@ const querySchema = z.object({
 });
 
 export async function GET(request: Request) {
+  if (!rateLimit(`slots:${clientKey(request.headers)}`, 90, 60 * 1000)) {
+    return NextResponse.json({ error: "Za dużo pytań o terminy. Spróbuj za chwilę." }, { status: 429 });
+  }
   const url = new URL(request.url);
   const parsed = querySchema.safeParse({
     date: url.searchParams.get("date"),

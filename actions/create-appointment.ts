@@ -1,8 +1,11 @@
 "use server";
 
 import { z } from "zod";
+import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { SALON } from "@/lib/brand";
 import { staffName } from "@/lib/booking/catalog";
+import { notifyOwner } from "@/lib/booking/push";
 import {
   buildIcs,
   googleCalendarUrl,
@@ -11,6 +14,8 @@ import {
 } from "@/lib/booking/notifications";
 import { bookingBackend, listPublicSlots, saveAppointment } from "@/lib/booking/repository";
 import type { ActionResult, BookingConfirmation } from "@/lib/booking/types";
+import { clientKey, rateLimit } from "@/lib/security/rate-limit";
+import { formatWarsawDate, formatWarsawTime } from "@/lib/utils";
 
 const schema = z.object({
   variantId: z.string().uuid(),
@@ -33,12 +38,16 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
     return { ok: false, error: "Nie udało się zapisać wizyty." };
   }
 
+  if (!rateLimit(`book:${clientKey(await headers())}`, 12, 60 * 60 * 1000)) {
+    return { ok: false, error: "Za dużo prób zapisu z tego połączenia. Spróbuj za godzinę." };
+  }
+
   if (bookingBackend() === "unconfigured") {
     return { ok: false, error: "Rezerwacje online wymagają konfiguracji Supabase." };
   }
 
-  const { findVariant } = await import("@/lib/booking/catalog");
-  const match = findVariant(parsed.data.variantId);
+  const { findPublishedVariant } = await import("@/lib/cms/store");
+  const match = findPublishedVariant(parsed.data.variantId);
   if (!match || !match.group.staffIds.includes(parsed.data.staffId)) {
     return { ok: false, error: "Ta stylistka nie wykonuje wybranej usługi." };
   }
@@ -52,17 +61,20 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
 
   const slots = await listPublicSlots(date, parsed.data.variantId, parsed.data.staffId);
   const slot = slots.find((item) => item.start === parsed.data.startsAt && item.staffId === parsed.data.staffId);
-  if (!slot) {
+  if (!slot?.available) {
     return { ok: false, error: "Ten termin nie jest już wolny. Wybierz inną godzinę." };
   }
 
   try {
+    const { getCustomer } = await import("@/lib/account/session");
+    const account = await getCustomer();
     const saved = await saveAppointment({
       serviceId: parsed.data.variantId,
       staffId: parsed.data.staffId,
       customerName: parsed.data.customerName,
-      customerPhone: parsed.data.customerPhone,
-      customerEmail: parsed.data.customerEmail || null,
+      customerPhone: account?.phone && !parsed.data.customerPhone ? account.phone : parsed.data.customerPhone,
+      customerEmail: account?.email || parsed.data.customerEmail || null,
+      customerId: account?.id ?? null,
       notes: parsed.data.notes || null,
       startsAt: slot.start,
       endsAt: slot.end,
@@ -98,6 +110,18 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
       });
     }
     smsSent = await sendAppointmentSms(saved.customerPhone, saved.startsAt);
+    const visitDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: SALON.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(saved.startsAt));
+    revalidatePath("/admin/kalendarz");
+    await notifyOwner({
+      title: "Nowa wizyta",
+      body: `${saved.customerName}, ${match.group.name}, ${formatWarsawDate(saved.startsAt)} ${formatWarsawTime(saved.startsAt)}`,
+      url: `/admin/kalendarz?date=${visitDate}`,
+    });
 
     return {
       ok: true,

@@ -115,13 +115,13 @@ export function StepClientForm() {
       </label>
       <label className="block text-sm">
         {copy.note}
-        <textarea value={notes} onChange={(event) => setField("notes", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" rows={3} placeholder="Np. rodzinna środa, męski czwartek, wcześniejsza farba" />
+        <textarea value={notes} onChange={(event) => setField("notes", event.target.value)} className="mt-1 w-full rounded-2xl border border-pink-100 bg-white px-3 py-2" rows={3} placeholder="Np. męski czwartek, wcześniejsza farba" />
       </label>
       <label className="absolute -left-[9999px] h-0 overflow-hidden" aria-hidden="true">
         Strona
         <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
       </label>
-      <p className="text-xs text-mauve">Płatność w salonie po zabiegu. Odwołanie: zadzwoń dzień wcześniej pod 880-606-454.</p>
+      <p className="text-xs text-mauve">Płatność w salonie, po zabiegu. Odwołanie zrób telefonicznie najpóźniej poprzedniego dnia.</p>
       {error ? <p className="text-sm text-berry">{error}</p> : null}
       <button type="submit" disabled={pending} className="w-full rounded-full bg-berry py-3 text-sm font-semibold text-white disabled:opacity-60">
         {pending ? "…" : copy.confirm}

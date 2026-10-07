@@ -30,15 +30,15 @@ export const STAFF = {
   iryna: {
     id: "22222222-2222-4222-8222-222222222222",
     name: "Pani Iryna",
-    role: "Stylistka — koloryzacja, strzyżenie, paznokcie i rzęsy",
-    specialties: ["#szycieSiwizny", "Airtouch", "Balayage", "Strzyżenie", "Afroloki", "Paznokcie", "Rzęsy"],
+    role: "Stylistka — koloryzacja, strzyżenie i afroloki",
+    specialties: ["#szycieSiwizny", "Airtouch", "Balayage", "Strzyżenie", "Afroloki"],
   },
 } as const;
 
 export const SALON_DOG = {
   name: "Bella",
   role: "Pies salonu",
-  bio: "Bella mieszka w rytmie salonu. Nie strzyże i nie maluje — jest psem PaniFryzjerki i dlatego salon jest zaprzyjaźniony z psami.",
+  bio: "Bella mieszka w rytmie salonu i wita gości przy fotelu. Spokojne psy są tu mile widziane.",
 } as const;
 
 export const ANY_STAFF_ID = "any";

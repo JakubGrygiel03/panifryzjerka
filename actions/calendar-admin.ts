@@ -50,7 +50,7 @@ export async function createWalkIn(input: unknown): Promise<ActionResult<{ id: s
       day: "2-digit",
     }).format(new Date(parsed.data.startsAt));
     const slots = await listPublicSlots(date, parsed.data.variantId, parsed.data.staffId);
-    const slot = slots.find((item) => item.start === parsed.data.startsAt);
+    const slot = slots.find((item) => item.start === parsed.data.startsAt && item.available);
     if (!slot) return { ok: false, error: "Ta godzina jest już zajęta." };
 
     const saved = await saveAppointment({

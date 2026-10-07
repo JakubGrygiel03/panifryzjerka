@@ -166,3 +166,13 @@ grant select, insert, update, delete on table
   public.time_offs,
   public.appointments
 to authenticated;
+
+grant select, insert, update, delete on table
+  public.tenants,
+  public.staff_members,
+  public.services,
+  public.staff_services,
+  public.working_hours,
+  public.time_offs,
+  public.appointments
+to service_role;

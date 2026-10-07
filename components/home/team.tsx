@@ -15,7 +15,8 @@ export function Team({ members }: { members: TeamMember[] }) {
             alt={irynaPhoto.alt}
             fill
             sizes="(min-width: 768px) 28vw, 100vw"
-            className="object-cover object-[center_20%]"
+            quality={68}
+            className="object-cover object-[center_25%]"
           />
         </div>
         <div className="space-y-10 p-8 sm:p-10">

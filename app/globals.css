@@ -39,6 +39,24 @@ body {
   background: #f3b4d2;
 }
 
+@media (max-width: 767px) {
+  [data-devices]:not([data-devices*="p"]) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-devices]:not([data-devices*="t"]) {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-devices]:not([data-devices*="d"]) {
+    display: none;
+  }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

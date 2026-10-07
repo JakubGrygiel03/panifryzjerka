@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "PaniFryzjerka",
     short_name: "PaniFryzjerka",
     description: "Rezerwacja wizyty w salonie PaniFryzjerka, Gdańsk, ul. Skarpowa 24.",
