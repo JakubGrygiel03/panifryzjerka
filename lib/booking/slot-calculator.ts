@@ -60,6 +60,41 @@ function overlaps(start: Date, end: Date, busy: BusyInterval): boolean {
   return start < busy.end && busy.start < end;
 }
 
+function localMinutes(date: Date, timeZone: string, day: string): number | null {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  const localDay = `${pick("year")}-${pick("month")}-${pick("day")}`;
+  if (localDay !== day) return null;
+  let hour = Number(pick("hour"));
+  if (hour === 24) hour = 0;
+  return hour * 60 + Number(pick("minute"));
+}
+
+function appointmentEndMinutes(staff: StaffDayInput, date: string, timeZone: string) {
+  return staff.appointments.flatMap((appointment) => {
+    const minute = localMinutes(appointment.end, timeZone, date);
+    return minute == null ? [] : [minute];
+  });
+}
+
+function startMinutes(windowStart: number, windowEnd: number, interval: number, occupied: number, extras: number[]) {
+  const minutes = new Set<number>();
+  const step = Math.max(1, interval);
+  for (let minute = windowStart; minute + occupied <= windowEnd; minute += step) minutes.add(minute);
+  for (const extra of extras) {
+    if (extra >= windowStart && extra + occupied <= windowEnd) minutes.add(extra);
+  }
+  return [...minutes].sort((left, right) => left - right);
+}
+
 export function staffBookedMinutes(staff: StaffDayInput, dayStart: Date, dayEnd: Date): number {
   return staff.appointments.reduce((total, appointment) => {
     const start = appointment.start > dayStart ? appointment.start : dayStart;
@@ -72,8 +107,8 @@ export function staffBookedMinutes(staff: StaffDayInput, dayStart: Date, dayEnd:
 export function calculateStaffSlots(input: SlotCalculatorInput, staff: StaffDayInput): AvailableSlot[] {
   const dayOfWeek = dayOfWeekInTimeZone(input.date, input.timeZone);
   const windows = staff.workingHours.filter((window) => window.dayOfWeek === dayOfWeek);
-  const earliest = addMinutes(input.now ?? new Date(), input.leadMinutes ?? 30);
-  const occupiedMinutes = input.durationMinutes + input.bufferMinutes;
+  const earliest = addMinutes(input.now ?? new Date(), input.leadMinutes ?? 15);
+  const extras = appointmentEndMinutes(staff, input.date, input.timeZone);
   const slots: AvailableSlot[] = [];
 
   for (const window of windows) {
@@ -86,14 +121,10 @@ export function calculateStaffSlots(input: SlotCalculatorInput, staff: StaffDayI
     const windowStart = zonedLocalToUtc(input.date, startTime, input.timeZone);
     const windowEnd = zonedLocalToUtc(input.date, endTime, input.timeZone);
 
-    for (
-      let minute = windowStartMinute;
-      minute + occupiedMinutes <= windowEndMinute;
-      minute += input.slotIntervalMinutes
-    ) {
+    for (const minute of startMinutes(windowStartMinute, windowEndMinute, input.slotIntervalMinutes, input.durationMinutes, extras)) {
       const label = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
       const start = zonedLocalToUtc(input.date, label, input.timeZone);
-      const end = addMinutes(start, occupiedMinutes);
+      const end = addMinutes(start, input.durationMinutes);
       if (start < windowStart || end > windowEnd || start < earliest) continue;
 
       const blocked = [...staff.timeOffs, ...staff.appointments].some((busy) => overlaps(start, end, busy));
@@ -109,8 +140,8 @@ export type GridSlot = AvailableSlot & { available: boolean };
 export function calculateStaffGrid(input: SlotCalculatorInput, staff: StaffDayInput): GridSlot[] {
   const dayOfWeek = dayOfWeekInTimeZone(input.date, input.timeZone);
   const windows = staff.workingHours.filter((window) => window.dayOfWeek === dayOfWeek);
-  const earliest = addMinutes(input.now ?? new Date(), input.leadMinutes ?? 30);
-  const occupiedMinutes = input.durationMinutes + input.bufferMinutes;
+  const earliest = addMinutes(input.now ?? new Date(), input.leadMinutes ?? 15);
+  const extras = appointmentEndMinutes(staff, input.date, input.timeZone);
   const slots: GridSlot[] = [];
 
   for (const window of windows) {
@@ -123,10 +154,10 @@ export function calculateStaffGrid(input: SlotCalculatorInput, staff: StaffDayIn
     const windowStart = zonedLocalToUtc(input.date, startTime, input.timeZone);
     const windowEnd = zonedLocalToUtc(input.date, endTime, input.timeZone);
 
-    for (let minute = windowStartMinute; minute + occupiedMinutes <= windowEndMinute; minute += input.slotIntervalMinutes) {
+    for (const minute of startMinutes(windowStartMinute, windowEndMinute, input.slotIntervalMinutes, input.durationMinutes, extras)) {
       const label = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
       const start = zonedLocalToUtc(input.date, label, input.timeZone);
-      const end = addMinutes(start, occupiedMinutes);
+      const end = addMinutes(start, input.durationMinutes);
       if (start < windowStart || end > windowEnd || start < earliest) continue;
       const blocked = [...staff.timeOffs, ...staff.appointments].some((busy) => overlaps(start, end, busy));
       slots.push({ start, end, staffId: staff.staffId, available: !blocked });

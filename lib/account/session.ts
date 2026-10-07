@@ -52,7 +52,7 @@ export async function getCustomer(): Promise<PublicCustomer | null> {
   const store = await cookies();
   const id = customerIdFromCookie(store.get(CUSTOMER_COOKIE)?.value);
   if (!id) return null;
-  const user = findCustomerById(id);
+  const user = await findCustomerById(id);
   return user ? toPublic(user) : null;
 }
 

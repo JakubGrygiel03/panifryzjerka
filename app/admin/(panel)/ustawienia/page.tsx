@@ -11,6 +11,7 @@ export default async function SettingsPage() {
       noticeEnabled={settings.noticeEnabled}
       googleRating={settings.googleRating}
       googleReviewCount={settings.googleReviewCount}
+      bookingLeadMinutes={settings.bookingLeadMinutes ?? 15}
       openingHours={settings.openingHours}
     />
   );

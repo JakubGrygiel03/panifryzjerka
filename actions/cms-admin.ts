@@ -9,11 +9,11 @@ import {
   adminCookieOptions,
   createAdminCookieValue,
   isAdminCookieValue,
-  passwordsMatch,
 } from "@/lib/cms/session";
 import { alignPair, savedMessage } from "@/lib/cms/align";
 import { getHomeSections } from "@/lib/cms/sections";
 import { SECTION_TYPES, type HomeSection } from "@/lib/cms/section-types";
+import { galleryCatalog } from "@/lib/cms/gallery";
 import { getComparisons } from "@/lib/cms/showcase";
 import { isSalonImagePath } from "@/lib/media/paths";
 import type { ComparisonPair } from "@/lib/cms/showcase-types";
@@ -39,8 +39,8 @@ function publish() {
 
 export async function loginAdmin(formData: FormData) {
   const password = String(formData.get("password") ?? "");
-  const expected = process.env.ADMIN_PASSWORD?.trim() ?? "";
-  if (!expected || !passwordsMatch(password, expected)) {
+  const { adminPasswordMatches } = await import("@/lib/account/admin-password");
+  if (!(await adminPasswordMatches(password))) {
     redirect("/admin/logowanie?blad=1");
   }
   const store = await cookies();
@@ -55,6 +55,7 @@ const settingsSchema = z.object({
   noticeEnabled: z.boolean(),
   googleRating: z.number().min(0).max(5),
   googleReviewCount: z.number().int().min(0).max(100000),
+  bookingLeadMinutes: z.number().int().min(0).max(240),
   openingHours: z.array(z.object({
     day: z.string().trim().max(80),
     hours: z.string().trim().max(40),
@@ -70,6 +71,7 @@ export async function saveSettings(input: {
   noticeEnabled: boolean;
   googleRating: number;
   googleReviewCount: number;
+  bookingLeadMinutes: number;
   openingHours: OpeningHour[];
 }, source: Locale = "PL") {
   await requireAdmin();
@@ -100,6 +102,7 @@ export async function saveSettings(input: {
       noticeEnabled: parsed.noticeEnabled,
       googleRating: parsed.googleRating,
       googleReviewCount: parsed.googleReviewCount,
+      bookingLeadMinutes: parsed.bookingLeadMinutes,
       openingHours,
     },
   });
@@ -320,4 +323,17 @@ export async function saveShowcase(input: { heroSlides: string[]; heroDevices?: 
   await writeCms({ ...current, heroSlides, heroDevices, comparisons: translated });
   publish();
   return savedMessage(failed);
+}
+
+export async function saveGalleryOrder(order: string[]) {
+  await requireAdmin();
+  const allowed = new Set(galleryCatalog().map((photo) => photo.src));
+  const clean = order.filter((src) => allowed.has(src));
+  for (const src of allowed) {
+    if (!clean.includes(src)) clean.push(src);
+  }
+  const current = readCms();
+  await writeCms({ ...current, galleryOrder: clean });
+  publish();
+  return "Zapisane. Galeria na stronie jest w tej kolejności.";
 }

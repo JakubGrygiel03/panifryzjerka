@@ -24,6 +24,7 @@ type CmsFile = {
   heroSlides?: string[];
   heroDevices?: Record<string, DeviceVisibility>;
   comparisons?: ComparisonPair[];
+  galleryOrder?: string[];
   lengthGuide?: { note?: string; items?: Partial<LengthGuideItem>[]; ru?: { note?: string; items?: Partial<LengthGuideItem>[] } };
 };
 
@@ -68,6 +69,7 @@ export function applyCms(content: SalonContent): SalonContent {
   }
   settings.googleRating = clampDecimal(settings.googleRating, 0, 5, content.settings.googleRating);
   settings.googleReviewCount = clamp(settings.googleReviewCount, 0, 100000, content.settings.googleReviewCount);
+  settings.bookingLeadMinutes = clamp(settings.bookingLeadMinutes, 0, 240, 15);
   settings.noticeEnabled = Boolean(settings.noticeEnabled);
   settings.noticeText = String(settings.noticeText ?? "");
   settings.noticeTextRu = String(settings.noticeTextRu ?? "");

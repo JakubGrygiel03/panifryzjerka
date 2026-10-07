@@ -21,8 +21,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: "/icon.svg",
-      badge: "/icon.svg",
+      icon: "/icon-terminarz-192.png",
+      badge: "/icon-terminarz-192.png",
       data: { url: payload.url || "/admin/kalendarz" },
     }),
   );

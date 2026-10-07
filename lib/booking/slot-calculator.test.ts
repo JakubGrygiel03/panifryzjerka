@@ -29,6 +29,7 @@ assert.deepEqual(
     "2026-10-05T07:45:00.000Z",
     "2026-10-05T08:00:00.000Z",
     "2026-10-05T08:15:00.000Z",
+    "2026-10-05T08:30:00.000Z",
   ],
 );
 
@@ -65,5 +66,17 @@ const winter = calculateSlots({
   staff: [staff("a")],
 });
 assert.equal(winter[0]?.start.toISOString(), "2026-12-07T08:00:00.000Z");
+
+const afterSession = calculateSlots({
+  ...base,
+  durationMinutes: 30,
+  bufferMinutes: 0,
+  slotIntervalMinutes: 30,
+  staff: [staff("a", [{ start: new Date("2026-10-05T07:00:00.000Z"), end: new Date("2026-10-05T07:45:00.000Z") }])],
+});
+assert.deepEqual(
+  afterSession.map((slot) => slot.start.toISOString()),
+  ["2026-10-05T07:45:00.000Z", "2026-10-05T08:00:00.000Z", "2026-10-05T08:30:00.000Z"],
+);
 
 console.log("slot-calculator: ok");

@@ -12,6 +12,9 @@ data/media-index.json
 data/*.tmp
 data/analytics.json
 data/desk.json
+data/customers.json
+data/password-resets.json
+data/admin-password.json
 *.tsbuildinfo
 
 .vercel

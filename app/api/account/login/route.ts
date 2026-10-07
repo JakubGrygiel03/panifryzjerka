@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { findCustomerByEmail, normalizeEmail, verifyPassword } from "@/lib/account/customers";
 import { adminEmail, createCustomerCookieValue, customerCookieOptions, CUSTOMER_COOKIE } from "@/lib/account/session";
-import { ADMIN_COOKIE, adminCookieOptions, createAdminCookieValue, passwordsMatch } from "@/lib/cms/session";
+import { adminPasswordMatches } from "@/lib/account/admin-password";
+import { ADMIN_COOKIE, adminCookieOptions, createAdminCookieValue } from "@/lib/cms/session";
 import { sameOrigin } from "@/lib/security/origin";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 
@@ -22,14 +23,13 @@ export async function POST(request: Request) {
   const password = String(form.get("password") ?? "");
   if (!email.includes("@") || password.length < 1 || password.length > 128) return back(request, "dane", email);
 
-  const adminPassword = process.env.ADMIN_PASSWORD?.trim() ?? "";
-  if (email === adminEmail() && adminPassword && passwordsMatch(password, adminPassword)) {
+  if (email === adminEmail() && (await adminPasswordMatches(password))) {
     const response = NextResponse.redirect(new URL("/admin", request.url), 303);
     response.cookies.set(ADMIN_COOKIE, createAdminCookieValue(), adminCookieOptions());
     return response;
   }
 
-  const user = findCustomerByEmail(email);
+  const user = await findCustomerByEmail(email);
   if (!user || !verifyPassword(password, user.passwordHash)) return back(request, "haslo", email);
 
   const response = NextResponse.redirect(new URL("/konto", request.url), 303);

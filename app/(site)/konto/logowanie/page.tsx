@@ -16,7 +16,7 @@ const ERRORS: Record<string, string> = {
   odswiez: "Odśwież stronę i zaloguj się jeszcze raz.",
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ blad?: string; email?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ blad?: string; email?: string; gotowe?: string }> }) {
   const store = await cookies();
   if (isAdminCookieValue(store.get(ADMIN_COOKIE)?.value)) redirect("/admin");
   if (await getCustomer()) redirect("/konto");
@@ -40,11 +40,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           {say("Hasło")}
           <input name="password" type="password" required autoComplete="current-password" className="mt-1 w-full rounded-xl border border-ink/10 px-3 py-2 outline-none focus:border-berry" />
         </label>
+        {query.gotowe ? <p className="mt-3 text-sm font-medium text-ink">{say("Hasło zmienione. Zaloguj się nowym.")}</p> : null}
         {query.blad && ERRORS[query.blad] ? <p className="mt-3 text-sm font-medium text-berry">{say(ERRORS[query.blad])}</p> : null}
         <button type="submit" className="mt-6 w-full rounded-full bg-berry py-3 text-sm font-semibold text-white hover:bg-berry-deep">
           {say("Zaloguj się")}
         </button>
-        <p className="mt-4 text-center text-sm text-ink">
+        <p className="mt-4 text-center text-sm">
+          <Link href="/konto/haslo" className="font-semibold text-berry">
+            {say("Nie pamiętam hasła")}
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-ink">
           {say("Nie masz konta?")}{" "}
           <Link href="/konto/rejestracja" className="font-semibold text-berry">
             {say("Zarejestruj się")}

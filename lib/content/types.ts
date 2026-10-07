@@ -15,6 +15,7 @@ export type SalonSettings = {
   googleRating: number;
   googleReviewCount: number;
   googleReviewsUrl: string;
+  bookingLeadMinutes?: number;
   emailClientSubject?: string;
   emailClientBody?: string;
   emailSalonSubject?: string;

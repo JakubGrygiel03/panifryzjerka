@@ -15,6 +15,7 @@ type SettingsFormProps = {
   noticeEnabled: boolean;
   googleRating: number;
   googleReviewCount: number;
+  bookingLeadMinutes: number;
   openingHours: OpeningHour[];
 };
 
@@ -27,6 +28,7 @@ export function SettingsForm(props: SettingsFormProps) {
   const [noticeEnabled, setNoticeEnabled] = useState(props.noticeEnabled);
   const [googleRating, setGoogleRating] = useState(String(props.googleRating));
   const [googleReviewCount, setGoogleReviewCount] = useState(String(props.googleReviewCount));
+  const [bookingLeadMinutes, setBookingLeadMinutes] = useState(String(props.bookingLeadMinutes));
   const [openingHours, setOpeningHours] = useState(props.openingHours);
   const save = useSave(() =>
     saveSettings({
@@ -36,6 +38,7 @@ export function SettingsForm(props: SettingsFormProps) {
       noticeEnabled,
       googleRating: Number(googleRating),
       googleReviewCount: Number(googleReviewCount),
+      bookingLeadMinutes: Number(bookingLeadMinutes),
       openingHours,
     }, locale),
   );
@@ -67,6 +70,10 @@ export function SettingsForm(props: SettingsFormProps) {
             <input className={fieldClass} inputMode="numeric" value={googleReviewCount} onChange={(event) => setGoogleReviewCount(event.target.value)} />
           </Field>
         </div>
+        <Field label={copy.leadLabel}>
+          <input className={fieldClass} inputMode="numeric" value={bookingLeadMinutes} onChange={(event) => setBookingLeadMinutes(event.target.value)} />
+          <p className="mt-1 text-sm text-mauve">{copy.leadHint}</p>
+        </Field>
         <div className="grid gap-3">
           <p className="text-sm font-medium">{copy.hours}</p>
           <p className="text-sm text-mauve">{copy.hoursHint}</p>

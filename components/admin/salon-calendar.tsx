@@ -10,6 +10,7 @@ import { useWritingLocale } from "@/components/admin/writing-locale";
 import { adminCopy } from "@/lib/i18n/admin";
 
 const WEEKDAYS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+let pushRefreshStarted = false;
 
 function shiftMonth(month: string, delta: number) {
   const [year, monthNumber] = month.split("-").map(Number);
@@ -57,6 +58,26 @@ export function SalonCalendar({
       new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date()),
     );
   }, [day]);
+
+  useEffect(() => {
+    if (!vapidPublicKey || !("Notification" in window) || Notification.permission !== "granted" || pushRefreshStarted) return;
+    pushRefreshStarted = true;
+    void (async () => {
+      const registration = await navigator.serviceWorker.register("/admin/sw.js", { scope: "/admin/" });
+      const ready = registration.active ? registration : await navigator.serviceWorker.ready;
+      const current = await ready.pushManager.getSubscription();
+      if (current) await current.unsubscribe();
+      const subscription = await ready.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+      await fetch("/api/admin/push/subscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(subscription.toJSON()),
+      });
+    })().catch(() => undefined);
+  }, [vapidPublicKey]);
 
   useEffect(() => {
     const refresh = () => router.refresh();

@@ -16,7 +16,7 @@ import { presentComparison, presentFaq, presentLengthGuide, presentReview, prese
 import { getFaqItems, getLengthGuide, phoneHref } from "@/lib/cms/store";
 import type { Locale } from "@/lib/i18n";
 import { ruPhrase } from "@/lib/i18n/phrases";
-import { salonGallery } from "@/lib/content/gallery";
+import { galleryPhotos } from "@/lib/cms/gallery";
 import { AFTERCARE, PREP } from "@/lib/content/guides";
 import type { SalonContent } from "@/lib/content/types";
 import { getHeroSlides, getComparisons } from "@/lib/cms/showcase";
@@ -96,7 +96,7 @@ export function HomeSections({ sections, content, locale = "PL" }: { sections: H
                 <ComparisonGrid items={comparisons} />
               </div>
               <div className="mt-10">
-                <WorkGallery photos={salonGallery.filter((photo) => photo.src !== "/salon/biz-05.jpg")} />
+                <WorkGallery photos={galleryPhotos()} />
               </div>
             </section>
             </Band>

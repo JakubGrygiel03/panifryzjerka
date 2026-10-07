@@ -2,7 +2,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { SALON } from "@/lib/brand";
 import { staffName } from "@/lib/booking/catalog";
-import { cmsWorkingHours } from "@/lib/booking/opening";
+import { bookingLeadMinutes, cmsWorkingHours } from "@/lib/booking/opening";
 import { findPublishedVariant } from "@/lib/cms/store";
 import { calculateGrid, zonedLocalToUtc } from "@/lib/booking/slot-calculator";
 import { listTimeOffRows } from "@/lib/booking/time-offs";
@@ -182,6 +182,7 @@ export async function buildSlotInput(date: string, variantId: string, staffId: s
 export async function listPublicSlots(date: string, variantId: string, staffId: string): Promise<PublicSlot[]> {
   const input = await buildSlotInput(date, variantId, staffId);
   input.slotIntervalMinutes = 30;
+  input.leadMinutes = bookingLeadMinutes();
   const slots = calculateGrid(input);
   return slots.map((slot) => ({
     start: slot.start.toISOString(),
