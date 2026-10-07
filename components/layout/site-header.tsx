@@ -80,12 +80,13 @@ export function SiteHeader({
       </div>
       <div className="border-b border-ink/10 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-          <Link href="/" className="font-display text-2xl tracking-tight">
+          <Link href="/" className="flex items-center gap-2 font-display text-xl tracking-tight sm:text-2xl">
+            <img src="/logo-pani.png" alt="" width={40} height={40} className="h-9 w-9 shrink-0 rounded-full object-cover sm:h-10 sm:w-10" />
             Pani<span className="text-berry">Fryzjerka</span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm text-ink/70 md:flex">
+          <nav className="hidden items-center gap-4 text-sm text-ink/70 md:flex">
             {links.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-ink">
+              <Link key={link.href} href={link.href} className="whitespace-nowrap hover:text-ink">
                 {link.label}
               </Link>
             ))}
@@ -94,7 +95,7 @@ export function SiteHeader({
             <button
               type="button"
               onClick={() => openBooking()}
-              className="hidden rounded-full bg-berry px-4 py-2 text-sm font-semibold text-white hover:bg-berry-deep md:inline-flex"
+              className="hidden whitespace-nowrap rounded-full bg-berry px-3.5 py-2 text-sm font-semibold text-white hover:bg-berry-deep md:inline-flex"
             >
               {copy.book}
             </button>

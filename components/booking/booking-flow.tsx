@@ -54,7 +54,6 @@ export function BookingFlow({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-sm text-ink">{copy.withIryna}</p>
           {chosen && chosenVariant && step > 1 ? (
             <p className="mt-3 rounded-2xl bg-blush px-4 py-3 text-sm text-ink">
               {locale === "RU" ? ruPhrase(chosen.name) : chosen.name} · {formatPln(chosenVariant.priceCents)} · {chosenVariant.durationMinutes} {copy.minutes}
