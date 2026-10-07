@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { SALON, STAFF } from "@/lib/brand";
-import { mergeHourStarts } from "@/lib/booking/day-hours";
-import { listAppointmentsBetween, updateAppointmentStatus } from "@/lib/booking/repository";
+import { buildHourCells, mergeHourRanges, type HourCell } from "@/lib/booking/day-hours";
+import { listAppointmentsBetween, listStaffWorkingHours, updateAppointmentStatus } from "@/lib/booking/repository";
 import { dayOfWeekInTimeZone, zonedLocalToUtc } from "@/lib/booking/slot-calculator";
 import { createTimeOffRanges, deleteTimeOff, listTimeOffRows } from "@/lib/booking/time-offs";
 import { ADMIN_COOKIE, isAdminCookieValue } from "@/lib/cms/session";
@@ -12,7 +12,7 @@ import { ADMIN_COOKIE, isAdminCookieValue } from "@/lib/cms/session";
 type Result = { ok: true } | { ok: false; error: string };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const SLOT = /^([01]\d|2[0-3]):(00|30)$/;
+const SLOT = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 async function requireAdmin(): Promise<string | null> {
   const jar = await cookies();
@@ -25,14 +25,24 @@ function refresh() {
   revalidatePath("/rezerwacja");
 }
 
-function hourAllowed(date: string, label: string) {
-  if (!DATE.test(date) || !SLOT.test(label)) return false;
+async function cellsFor(date: string): Promise<HourCell[]> {
+  if (!DATE.test(date)) return [];
+  const dayStart = zonedLocalToUtc(date, "00:00", SALON.timezone);
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
   const weekday = dayOfWeekInTimeZone(date, SALON.timezone);
-  if (weekday === 0) return false;
-  const [hourText, minuteText] = label.split(":");
-  const minutes = Number(hourText) * 60 + Number(minuteText);
-  const end = weekday === 6 ? 18 * 60 : 20 * 60;
-  return minutes >= 9 * 60 && minutes < end;
+  const [hours, visits, blocks] = await Promise.all([
+    listStaffWorkingHours(STAFF.iryna.id),
+    listAppointmentsBetween(dayStart, dayEnd),
+    listTimeOffRows([STAFF.iryna.id], dayStart, dayEnd),
+  ]);
+  const active = visits.filter((row) => row.status !== "cancelled" && row.staffId === STAFF.iryna.id);
+  return buildHourCells(
+    date,
+    hours.filter((window) => window.dayOfWeek === weekday),
+    active.map((row) => ({ start: row.startsAt, end: row.endsAt })),
+    blocks,
+    [...active.flatMap((row) => [row.startsAt, row.endsAt]), ...blocks.flatMap((row) => [row.startsAt, row.endsAt])],
+  );
 }
 
 function overlaps(start: string, end: string, row: { startsAt: string; endsAt: string }) {
@@ -44,12 +54,16 @@ export async function blockHours(date: string, labels: string[]): Promise<Result
   if (denied) return { ok: false, error: denied };
   const unique = [...new Set(labels)];
   if (unique.length === 0) return { ok: false, error: "Zaznacz godziny, które mają zniknąć z rezerwacji." };
-  if (unique.some((label) => !hourAllowed(date, label))) {
+  if (unique.some((label) => !SLOT.test(label))) {
     return { ok: false, error: "Te godziny są poza dniem pracy salonu." };
   }
 
-  const starts = unique.map((label) => zonedLocalToUtc(date, label, SALON.timezone).toISOString());
-  const ranges = mergeHourStarts(starts);
+  const cells = await cellsFor(date);
+  const chosen = unique.map((label) => cells.find((cell) => cell.label === label));
+  if (chosen.some((cell) => !cell)) {
+    return { ok: false, error: "Te godziny są poza dniem pracy salonu." };
+  }
+  const ranges = mergeHourRanges(chosen.flatMap((cell) => (cell ? [{ startsAt: cell.startsAt, endsAt: cell.endsAt }] : [])));
   const dayStart = zonedLocalToUtc(date, "00:00", SALON.timezone);
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
   const visits = await listAppointmentsBetween(dayStart, dayEnd);
@@ -70,10 +84,12 @@ export async function blockHours(date: string, labels: string[]): Promise<Result
 export async function releaseHour(date: string, label: string): Promise<Result> {
   const denied = await requireAdmin();
   if (denied) return { ok: false, error: denied };
-  if (!hourAllowed(date, label)) return { ok: false, error: "Nie ma takiej godziny w grafiku." };
+  if (!SLOT.test(label)) return { ok: false, error: "Nie ma takiej godziny w grafiku." };
+  const cell = (await cellsFor(date)).find((item) => item.label === label);
+  if (!cell) return { ok: false, error: "Nie ma takiej godziny w grafiku." };
 
-  const start = zonedLocalToUtc(date, label, SALON.timezone);
-  const end = new Date(start.getTime() + 30 * 60_000);
+  const start = new Date(cell.startsAt);
+  const end = new Date(cell.endsAt);
   const dayStart = zonedLocalToUtc(date, "00:00", SALON.timezone);
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
   const blocks = await listTimeOffRows([STAFF.iryna.id], dayStart, dayEnd);

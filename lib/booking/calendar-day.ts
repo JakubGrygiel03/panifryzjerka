@@ -124,6 +124,10 @@ export async function loadCalendarDay(date: string, month: string): Promise<Cale
       windows,
       active.map((row) => ({ start: row.startsAt, end: row.endsAt })),
       dayBlocks,
+      [
+        ...active.flatMap((row) => [row.startsAt, row.endsAt]),
+        ...dayBlocks.flatMap((row) => [row.startsAt, row.endsAt]),
+      ],
     ),
     monthDays,
   };

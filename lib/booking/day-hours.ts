@@ -33,44 +33,50 @@ export function buildHourCells(
   windows: Window[],
   appointments: Span[],
   blocks: TimeOffRow[],
+  extras: string[] = [],
 ): HourCell[] {
   const cells: HourCell[] = [];
   for (const window of windows) {
-    let cursor = zonedLocalToUtc(date, window.startTime.slice(0, 5), SALON.timezone);
+    const windowStart = zonedLocalToUtc(date, window.startTime.slice(0, 5), SALON.timezone);
     const windowEnd = zonedLocalToUtc(date, window.endTime.slice(0, 5), SALON.timezone);
-    while (cursor < windowEnd) {
-      const next = new Date(Math.min(cursor.getTime() + 30 * 60_000, windowEnd.getTime()));
-      if (next.getTime() - cursor.getTime() < 30 * 60_000) break;
-      const block = blocks.find((row) => hits(cursor, next, { start: row.startsAt, end: row.endsAt }));
-      const booked = appointments.some((row) => hits(cursor, next, row));
+    const points = new Map<number, Date>();
+    for (let cursor = windowStart; cursor < windowEnd; cursor = new Date(cursor.getTime() + 30 * 60_000)) {
+      points.set(cursor.getTime(), cursor);
+    }
+    for (const iso of extras) {
+      const point = new Date(iso);
+      if (Number.isNaN(point.getTime())) continue;
+      if (point.getTime() > windowStart.getTime() && point.getTime() < windowEnd.getTime()) {
+        points.set(point.getTime(), point);
+      }
+    }
+    const starts = [...points.values()].sort((left, right) => left.getTime() - right.getTime());
+    for (let index = 0; index < starts.length; index += 1) {
+      const start = starts[index];
+      const following = starts[index + 1] ?? windowEnd;
+      const end = new Date(Math.min(start.getTime() + 30 * 60_000, following.getTime(), windowEnd.getTime()));
+      if (end.getTime() <= start.getTime()) continue;
+      const block = blocks.find((row) => hits(start, end, { start: row.startsAt, end: row.endsAt }));
+      const booked = appointments.some((row) => hits(start, end, row));
       cells.push({
-        label: warsawLabel(cursor),
-        startsAt: cursor.toISOString(),
-        endsAt: next.toISOString(),
+        label: warsawLabel(start),
+        startsAt: start.toISOString(),
+        endsAt: end.toISOString(),
         state: booked ? "booked" : block ? "blocked" : "free",
         blockId: block?.id ?? null,
       });
-      cursor = next;
     }
   }
   return cells;
 }
 
-export function mergeHourStarts(startsAt: string[]) {
-  const sorted = [...new Set(startsAt)].sort();
-  const ranges: { startsAt: string; endsAt: string }[] = [];
-  let currentStart = "";
-  let currentEnd = "";
-  for (const start of sorted) {
-    const end = new Date(new Date(start).getTime() + 30 * 60_000).toISOString();
-    if (!currentEnd || start !== currentEnd) {
-      if (currentStart) ranges.push({ startsAt: currentStart, endsAt: currentEnd });
-      currentStart = start;
-      currentEnd = end;
-    } else {
-      currentEnd = end;
-    }
+export function mergeHourRanges(ranges: { startsAt: string; endsAt: string }[]) {
+  const sorted = [...ranges].sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+  const merged: { startsAt: string; endsAt: string }[] = [];
+  for (const range of sorted) {
+    const last = merged[merged.length - 1];
+    if (last && last.endsAt === range.startsAt) last.endsAt = range.endsAt;
+    else merged.push({ startsAt: range.startsAt, endsAt: range.endsAt });
   }
-  if (currentStart) ranges.push({ startsAt: currentStart, endsAt: currentEnd });
-  return ranges;
+  return merged;
 }

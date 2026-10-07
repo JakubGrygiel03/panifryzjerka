@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { VisitWatch } from "@/components/admin/visit-watch";
 import { useCmsLocaleStore } from "@/store/use-cms-locale-store";
 
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -22,6 +23,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen bg-blush text-ink">
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
+        <VisitWatch />
         <AdminTopbar onMenuOpen={() => setMenuOpen(true)} />
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>

@@ -81,7 +81,7 @@ export function SalonCalendar({
 
   useEffect(() => {
     const refresh = () => router.refresh();
-    const timer = window.setInterval(refresh, 15_000);
+    const timer = window.setInterval(refresh, 10_000);
     const onVisible = () => {
       if (document.visibilityState === "visible") refresh();
     };
@@ -337,7 +337,7 @@ export function SalonCalendar({
               });
             }}
           >
-            Oznacz {selectedLabels.length === 1 ? "tę półgodzinę" : `${selectedLabels.length} półgodziny`} jako niedostępne
+            Oznacz {selectedLabels.length === 1 ? "tę godzinę" : `${selectedLabels.length} godziny`} jako niedostępne
           </button>
         ) : null}
         {error ? <p className="mt-3 text-sm text-berry">{error}</p> : null}
@@ -346,6 +346,9 @@ export function SalonCalendar({
       <section className="mt-4 rounded-[1.75rem] bg-white p-4 ring-1 ring-pink-100 sm:p-6">
         <h2 className="font-display text-2xl">Telefon</h2>
         <div className="mt-3 space-y-3 text-sm leading-6 text-ink/80">
+          <p>
+            Gdy Terminarz jest otwarty, co 10 sekund sprawdza, czy doszła nowa wizyta, i wtedy pokazuje powiadomienie. Zapis klientki próbuje wysłać je też od razu, nawet gdy kalendarz jest zamknięty. Na telefonie widać je po zgodzie i z ikony Terminarz.
+          </p>
           <p>Strona dla klientek i ten kalendarz to dwie osobne ikony. Każdą dodaje się z własnego adresu.</p>
           <p>
             <span className="font-semibold">Klientki, iPhone i Android:</span> otwórz stronę salonu i wybierz „Dodaj do ekranu początkowego” albo „Zainstaluj aplikację”.

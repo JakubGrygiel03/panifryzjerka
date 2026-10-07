@@ -88,7 +88,7 @@ async function removeSubscription(endpoint: string) {
   });
 }
 
-export async function notifyOwner(message: { title: string; body: string; url: string }) {
+export async function notifyOwner(message: { title: string; body: string; url: string; id?: string }) {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
   const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
   if (!publicKey || !privateKey) return;

@@ -118,6 +118,7 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
       title: "Nowa wizyta",
       body: `${saved.customerName}, ${match.group.name}, ${formatWarsawDate(saved.startsAt)} ${formatWarsawTime(saved.startsAt)}`,
       url: `/admin/kalendarz?date=${visitDate}`,
+      id: saved.id,
     });
 
     return {
