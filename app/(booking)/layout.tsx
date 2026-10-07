@@ -1,3 +1,4 @@
+import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { getCustomer } from "@/lib/account/session";
 import { AccountPrefill } from "@/components/booking/account-prefill";
 import { Footer } from "@/components/layout/footer";
@@ -20,6 +21,7 @@ export default async function BookingLayout({ children }: { children: React.Reac
   return (
     <>
       <LocaleBoot locale={locale} />
+      <AnalyticsBeacon />
       <SiteHeader
         noticeEnabled={content.settings.noticeEnabled}
         noticeText={content.settings.noticeText}

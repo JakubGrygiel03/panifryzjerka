@@ -18,7 +18,7 @@ export function AnalyticsView({
   recent,
   services,
   monthRows,
-  views30,
+  traffic,
 }: {
   monthCount: number;
   monthMoney: string;
@@ -30,7 +30,15 @@ export function AnalyticsView({
   recent: PeopleRow[];
   services: { name: string; count: number; money: string }[];
   monthRows: PeopleRow[];
-  views30: number;
+  traffic: {
+    people30: number;
+    views30: number;
+    views7: number;
+    clicks30: number;
+    pages: { label: string; count: number }[];
+    clicks: { label: string; count: number }[];
+    interest: { label: string; count: number }[];
+  };
 }) {
   const copy = adminCopy(useWritingLocale());
   const [amount, setAmount] = useState(cashToday ? String(cashToday) : "");
@@ -80,6 +88,11 @@ export function AnalyticsView({
       <button type="button" onClick={downloadCsv} className="-mt-2 mb-6 inline-flex rounded-full bg-berry px-5 py-2.5 text-sm font-semibold text-white">
         {copy.downloadCsv}
       </button>
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <Insight title={copy.windowVisits} value={String(traffic.people30)} hint={`${traffic.views30} ${copy.viewsLine} · ${traffic.views7} / 7 dni`} rows={traffic.pages} empty={traffic.views30 === 0 ? copy.noVisits : ""} />
+        <Insight title={copy.windowClicks} value={String(traffic.clicks30)} hint={copy.clicksLine} rows={traffic.clicks} empty={copy.noClicks} />
+        <Insight title={copy.windowInterest} value={traffic.interest[0]?.label ?? "—"} hint={copy.interestHint} rows={traffic.interest} empty={copy.noInterest} />
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label={copy.monthBooks} value={String(monthCount)} hint={cancelled ? `${cancelled} ${copy.monthCancelled}` : ""} />
         <Stat label={copy.monthList} value={monthMoney} hint={copy.monthListHint} />
@@ -117,9 +130,45 @@ export function AnalyticsView({
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-xs text-mauve">{views30} {copy.viewsFoot}</p>
       </section>
     </div>
+  );
+}
+
+function Insight({
+  title,
+  value,
+  hint,
+  rows,
+  empty,
+}: {
+  title: string;
+  value: string;
+  hint: string;
+  rows: { label: string; count: number }[];
+  empty: string;
+}) {
+  const max = rows[0]?.count ?? 1;
+  return (
+    <section className="rounded-[1.5rem] bg-white p-5 ring-1 ring-pink-100">
+      <p className="text-sm text-mauve">{title}</p>
+      <p className="mt-1 truncate font-display text-3xl text-ink">{value}</p>
+      <p className="mt-1 text-xs leading-4 text-mauve">{hint}</p>
+      {rows.length === 0 ? <p className="mt-4 text-sm text-mauve">{empty}</p> : null}
+      <ul className="mt-4 space-y-2">
+        {rows.map((row) => (
+          <li key={row.label}>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="truncate">{row.label}</span>
+              <span className="shrink-0 text-ink/70">{row.count}</span>
+            </div>
+            <div className="mt-1 h-1.5 rounded-full bg-blush">
+              <div className="h-1.5 rounded-full bg-berry/70" style={{ width: `${Math.max(8, Math.round((row.count / max) * 100))}%` }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

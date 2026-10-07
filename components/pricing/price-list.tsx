@@ -120,6 +120,7 @@ export function PriceList({ services, compact = false, lengthGuide = DEFAULT_LEN
               ) : null}
               <button
                 type="button"
+                data-track={`Usługa · ${service.name}`}
                 onClick={() => openBooking(service.id, variant.id)}
                 className="mt-5 text-sm font-semibold text-berry underline decoration-berry/30 underline-offset-4"
               >

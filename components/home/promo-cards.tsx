@@ -22,6 +22,7 @@ export function PromoCards({ mensVariantId }: { mensVariantId: string }) {
           </div>
           <button
             type="button"
+            data-track="Usługa · Strzyżenie męskie"
             onClick={() => openBooking("strzyzenie-meskie", mensVariantId)}
             className="self-start text-sm font-semibold text-berry underline decoration-berry/30 underline-offset-4"
           >
@@ -34,7 +35,7 @@ export function PromoCards({ mensVariantId }: { mensVariantId: string }) {
             <h2 className="mt-3 font-display text-3xl">#szycieSiwizny</h2>
             <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">{copy.techniqueLead}</p>
           </div>
-          <button type="button" onClick={() => openBooking(szycie?.id, szycieVariant?.id)} className="self-start text-sm font-semibold text-pink-100 underline decoration-white/30 underline-offset-4">
+          <button type="button" data-track="Usługa · Szycie siwizny" onClick={() => openBooking(szycie?.id, szycieVariant?.id)} className="self-start text-sm font-semibold text-pink-100 underline decoration-white/30 underline-offset-4">
             {copy.bookGrey}
           </button>
         </article>

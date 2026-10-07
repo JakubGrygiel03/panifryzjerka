@@ -74,6 +74,7 @@ export function StepService({ services, lengthGuide = DEFAULT_LENGTH_GUIDE }: { 
             <div key={service.id} ref={selected ? openRow : undefined} className={`rounded-2xl ${selected ? "bg-berry text-white" : "bg-blush text-ink"}`}>
               <button
                 type="button"
+                data-track={`Usługa · ${service.name}`}
                 onClick={() => {
                   setGroup(service.id);
                   const preferred = service.variants.find((item) => item.hairLength === "medium") ?? service.variants[0];

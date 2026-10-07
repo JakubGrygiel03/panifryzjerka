@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  if (/\.(?:jpe?g|png|webp|gif|avif|svg)$/i.test(path)) return NextResponse.next();
   if (path === "/api/admin/media") {
     if (request.method === "POST") {
       const length = Number(request.headers.get("content-length") ?? "");

@@ -60,7 +60,7 @@ export function Techniques({ services }: { services: ServiceGroup[] }) {
             <h3 className="mt-2 font-display text-3xl text-ink">{copy.title}</h3>
             <p className="mt-3 text-base leading-7 text-ink">{copy.text}</p>
           </div>
-          <button type="button" onClick={() => book(item.id)} className="mt-6 self-start rounded-full bg-berry px-4 py-2.5 text-sm font-semibold text-white hover:bg-berry-deep">
+          <button type="button" data-track={`Usługa · ${item.title.startsWith("#") ? "Szycie siwizny" : item.title}`} onClick={() => book(item.id)} className="mt-6 self-start rounded-full bg-berry px-4 py-2.5 text-sm font-semibold text-white hover:bg-berry-deep">
             {locale === "RU" ? "Записаться на эту технику" : "Zarezerwuj tę technikę"}
           </button>
         </article>
