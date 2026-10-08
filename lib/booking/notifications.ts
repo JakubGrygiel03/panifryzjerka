@@ -85,6 +85,7 @@ export async function sendFilledMail(input: { to: string; subject: string; body:
 export async function sendBookingMails(input: {
   to: string;
   customerName: string;
+  customerPhone: string;
   serviceName: string;
   startsAt: string;
   ics: string;
@@ -97,6 +98,11 @@ export async function sendBookingMails(input: {
     adres: `${SALON.street}, ${SALON.postalCode} ${SALON.city}`,
     telefon: SALON.phoneDisplay,
   };
+  const salonValues = {
+    ...values,
+    telefon: input.customerPhone,
+    mail: input.to || "nie podano",
+  };
   const clientOk = await postMail({
     to: input.to,
     subject: fillMail(templates.emailClientSubject, values),
@@ -105,8 +111,8 @@ export async function sendBookingMails(input: {
   });
   await postMail({
     to: adminEmail(),
-    subject: fillMail(templates.emailSalonSubject, values),
-    html: brandedHtml(fillMail(templates.emailSalonBody, values), values),
+    subject: fillMail(templates.emailSalonSubject, salonValues),
+    html: brandedHtml(fillMail(templates.emailSalonBody, salonValues), salonValues),
   });
   return clientOk;
 }
@@ -117,7 +123,8 @@ export function mailPreview(kind: MailKind, templates = mailTemplates(readCms().
     usluga: "Szycie siwizny",
     termin: "czwartek, 12:30",
     adres: `${SALON.street}, ${SALON.postalCode} ${SALON.city}`,
-    telefon: SALON.phoneDisplay,
+    telefon: kind === "salon" ? "500 600 700" : SALON.phoneDisplay,
+    mail: kind === "salon" ? "anna@example.com" : "",
     opinia: SALON.reviewsUrl,
   };
   const subject = kind === "salon" ? templates.emailSalonSubject : kind === "reminder" ? templates.emailReminderSubject : kind === "review" ? templates.emailReviewSubject : templates.emailClientSubject;

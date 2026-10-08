@@ -108,6 +108,7 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Bo
     emailSent = await sendBookingMails({
       to: saved.customerEmail ?? "",
       customerName: saved.customerName,
+      customerPhone: saved.customerPhone,
       serviceName: match.group.name,
       startsAt: saved.startsAt,
       ics,

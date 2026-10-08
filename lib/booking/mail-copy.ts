@@ -18,7 +18,7 @@ export const DEFAULT_MAILS: MailTemplates = {
   emailClientBody:
     "Cześć {imie},\n\nTwoja wizyta jest zapisana.\n\n{usluga}\n{termin}\n{adres}\nTelefon salonu: {telefon}\n\nPłatność w salonie, po zabiegu. Odwołanie zrób telefonicznie najpóźniej poprzedniego dnia.\n\nDo zobaczenia,\nPaniFryzjerka",
   emailSalonSubject: "Nowa rezerwacja — {imie}",
-  emailSalonBody: "Nowa wizyta jest zapisana.\n\n{imie}\n{usluga}\n{termin}\n{adres}\n\nSzczegóły są w terminarzu.",
+  emailSalonBody: "Nowa wizyta jest zapisana.\n\n{imie}\n{usluga}\n{termin}\nTelefon klientki: {telefon}\nE-mail klientki: {mail}\n\nSzczegóły są w terminarzu.",
   emailReminderSubject: "Jutro wizyta — PaniFryzjerka",
   emailReminderBody: "Cześć {imie},\n\njutro czekamy na Ciebie.\n\n{usluga}\n{termin}\n{adres}\nTel. {telefon}",
   emailReviewSubject: "Jak minęła wizyta? — PaniFryzjerka",
@@ -39,7 +39,7 @@ export function mailTemplates(saved?: Partial<MailTemplates> | null): MailTempla
 }
 
 export function fillMail(template: string, values: Record<string, string>) {
-  return template.replace(/\{(imie|usluga|termin|adres|telefon|opinia)\}/g, (token, key: string) => values[key] ?? token);
+  return template.replace(/\{(imie|usluga|termin|adres|telefon|mail|opinia)\}/g, (token, key: string) => values[key] ?? token);
 }
 
 export type MailFacts = {
@@ -48,6 +48,7 @@ export type MailFacts = {
   termin?: string;
   adres?: string;
   telefon?: string;
+  mail?: string;
   opinia?: string;
 };
 
