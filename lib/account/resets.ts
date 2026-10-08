@@ -97,7 +97,7 @@ export async function sendResetMail(email: string, token: string, origin: string
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "PaniFryzjerka <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM_EMAIL ?? "PaniFryzjerka <noreply@panifryzjerka.pl>",
       to: [email],
       subject: "Nowe hasło — PaniFryzjerka",
       html,

@@ -66,7 +66,7 @@ async function postMail(input: { to: string; subject: string; html: string; ics?
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "PaniFryzjerka <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM_EMAIL ?? "PaniFryzjerka <noreply@panifryzjerka.pl>",
       to: [input.to],
       subject: input.subject,
       html: input.html,
