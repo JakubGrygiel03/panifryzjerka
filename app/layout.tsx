@@ -11,8 +11,8 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
 });
 
-const searchTitle = `PaniFryzjerka ★ ${SALON.rating} — fryzjer Gdańsk, Skarpowa`;
-const searchDescription = `★ ${SALON.rating} · ponad ${SALON.reviewCount} opinii Google. Rodzinny salon przy ul. Skarpowej 24: koloryzacja, szycie siwizny i afroloki. Parking przy budynku, psy mile widziane.`;
+const searchTitle = `PaniFryzjerka ★ ${SALON.rating} · ${SALON.reviewCount} opinie`;
+const searchDescription = `Rodzinny salon przy ul. Skarpowej 24. Koloryzacja, szycie siwizny i afroloki. Parking przy budynku, psy mile widziane.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SALON.siteUrl),
