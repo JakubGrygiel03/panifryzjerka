@@ -8,6 +8,7 @@ export function hairSalonJsonLd() {
     "@type": "HairSalon",
     name: SALON.name,
     url: SALON.siteUrl,
+    sameAs: [SALON.instagram, SALON.facebook],
     image: `${SALON.siteUrl}/opengraph.jpg`,
     telephone: SALON.phoneE164,
     email: SALON.email,

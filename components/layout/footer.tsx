@@ -42,6 +42,14 @@ export function Footer({
           <a href={phoneHref} className="mt-3 inline-block text-sm text-pink-100">
             {phoneDisplay}
           </a>
+          <p className="mt-4 flex gap-4 text-sm">
+            <a href={SALON.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-100 hover:text-white">
+              Instagram
+            </a>
+            <a href={SALON.facebook} target="_blank" rel="noopener noreferrer" className="text-pink-100 hover:text-white">
+              Facebook
+            </a>
+          </p>
         </div>
         <ul className="space-y-2 text-sm text-white/70">
           {hours.map((row) => (

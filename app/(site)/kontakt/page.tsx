@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { SALON } from "@/lib/brand";
 import { presentSettings } from "@/lib/cms/present";
@@ -55,6 +55,14 @@ export default async function ContactPage() {
             <a href={`mailto:${SALON.email}`} className="inline-flex items-center justify-center gap-2 rounded-full bg-blush px-5 py-3 text-sm font-semibold text-ink">
               <Mail size={16} className="text-berry" aria-hidden />
               {SALON.email}
+            </a>
+            <a href={SALON.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink ring-1 ring-pink-200 hover:bg-blush">
+              <Instagram size={16} className="text-berry" aria-hidden />
+              Instagram
+            </a>
+            <a href={SALON.facebook} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink ring-1 ring-pink-200 hover:bg-blush">
+              <Facebook size={16} className="text-berry" aria-hidden />
+              Facebook
             </a>
           </div>
 

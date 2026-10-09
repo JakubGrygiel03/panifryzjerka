@@ -23,7 +23,8 @@ export const SALON = {
   reviewCount: 194,
   reviewCountLabel: "194+",
   siteUrl: "https://panifryzjerka.pl",
-  instagram: "https://instagram.com/panifryzjerka",
+  instagram: "https://www.instagram.com/panifryzjerka/",
+  facebook: "https://www.facebook.com/panifryzjerka",
 } as const;
 
 export const STAFF = {

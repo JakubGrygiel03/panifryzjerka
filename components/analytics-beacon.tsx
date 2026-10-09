@@ -41,6 +41,7 @@ function clickLabel(target: Element) {
   if (href.startsWith("tel:")) return "Telefon";
   if (/maps\.google|google\.com\/maps|goo\.gl\/maps/i.test(href)) return "Mapa";
   if (/instagram\.com/i.test(href)) return "Instagram";
+  if (/facebook\.com/i.test(href)) return "Facebook";
   if (href.startsWith("/")) {
     const page = labelForPath(href);
     if (page && page !== "Strona główna") return page;
