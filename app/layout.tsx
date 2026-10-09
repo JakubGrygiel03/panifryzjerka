@@ -11,21 +11,32 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
 });
 
+const searchTitle = `PaniFryzjerka ★ ${SALON.rating} — fryzjer Gdańsk, Skarpowa`;
+const searchDescription = `★ ${SALON.rating} · ponad ${SALON.reviewCount} opinii Google. Rodzinny salon przy ul. Skarpowej 24: koloryzacja, szycie siwizny i afroloki. Parking przy budynku, psy mile widziane.`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SALON.siteUrl),
   title: {
-    default: "PaniFryzjerka — salon beauty Gdańsk, ul. Skarpowa 24",
+    default: searchTitle,
     template: "%s · PaniFryzjerka",
   },
-  description:
-    "Rodzinny salon fryzjerski w Gdańsku przy ul. Skarpowej 24. Koloryzacja, #szycieSiwizny i afroloki. Parking, psy i dostęp dla niepełnosprawnych. Ocena 4.9.",
+  description: searchDescription,
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon-pani-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon-pani-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-pani-192.png", sizes: "192x192" }],
+  },
   alternates: { canonical: "/" },
   openGraph: {
-    title: "PaniFryzjerka — salon beauty w Gdańsku",
-    description: "Koloryzacja, #szycieSiwizny i rezerwacja online bez prowizji. ul. Skarpowa 24, Gdańsk.",
+    title: searchTitle,
+    description: searchDescription,
     locale: "pl_PL",
     type: "website",
     url: SALON.siteUrl,
+    images: [{ url: "/icon-pani-512.png", width: 512, height: 512, alt: "PaniFryzjerka" }],
   },
   robots: { index: true, follow: true },
   applicationName: "PaniFryzjerka",
